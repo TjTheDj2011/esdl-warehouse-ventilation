@@ -85,6 +85,12 @@ class VentController {
   uint8_t fail_streak() const { return fail_streak_; }
   uint32_t ms_in_state(uint32_t now_ms) const { return now_ms - entered_ms_; }
 
+  // Clear the latched decisions so the next update re-derives them from live
+  // data. Needed when leaving simulation: hysteresis deliberately holds a
+  // latch inside the band, so a rehearsal at 85F can leave the rig venting at
+  // 77.6F - a state the real temperature never would have produced.
+  void reset_latches();
+
   static const char* state_name(VentState s);
   static const char* fan_name(FanDrive d);
   static VentOutputs outputs_for(VentState s);

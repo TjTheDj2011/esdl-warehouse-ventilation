@@ -37,6 +37,7 @@ class Rig {
     for (uint32_t t = 0; t < total_ms; t += 2500) step(2500, in_f, out_f);
   }
   VentState state() const { return c_.state(); }
+  void reset() { c_.reset_latches(); }
   VentOutputs out() const { return c_.outputs(); }
   uint32_t now() const { return now_; }
 
@@ -334,6 +335,22 @@ int main() {
     Rig r;
     check(!violated,
           "swept outside 60-130F at 95F inside: no exchange once outside wins", r);
+  }
+
+  {
+    std::printf("\n[18] Leaving simulation must not strand a latched state\n");
+    Rig r;
+    r.hold(25000, 85.0f, 65.0f);
+    check(r.state() == VentState::CROSS_VENT, "hot latch set at 85F", r);
+    // 77.6F sits inside the 77-80 hysteresis band, so the latch would hold.
+    r.hold(25000, 77.6f, 65.0f);
+    check(r.state() == VentState::CROSS_VENT,
+          "77.6F alone keeps venting - hysteresis working as designed", r);
+    // Clearing the latches is what leaving simulation must do.
+    r.reset();
+    r.hold(25000, 77.6f, 65.0f);
+    check(r.state() == VentState::STANDBY,
+          "after reset, 77.6F settles to STANDBY as a fresh boot would", r);
   }
 
   std::printf("\n=== %d checks, %d failures ===\n\n", checks, failures);

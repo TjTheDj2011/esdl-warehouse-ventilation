@@ -76,6 +76,26 @@ Two consequences, both fixed:
   alarm sounded from power-up before any logic ran. It now initialises to the
   silent level.
 
+### Buzzer verified after the fix
+
+Confirmed by ear: silent, then steady tone, then silent, then 4 Hz beeping,
+then silent. The two alarm sounds are distinguishable, which is the point -
+a thermal problem and a sensor problem can be told apart without looking at
+a panel.
+
+### Latch carry-over after simulation (found while reviewing status)
+
+`status` showed `CROSS_VENT` with the chamber at 77.6 F and `hot=yes`, having
+earlier run `sim 85 65`. The hysteresis was behaving correctly - 77.6 F sits
+inside the 77-80 band, so the latch held - but the latch had been set by
+injected data, not by the real chamber. A fresh boot at 77.6 F would sit in
+STANDBY.
+
+Left alone this means a rehearsal with `sim` can strand the rig in a state the
+real temperature never produced, which during a demo would read as a fault.
+`sim off` now clears the latches so the controller re-derives from live data.
+Host check [18] covers it.
+
 ### Outstanding at end of session
 
 **DRV8833 header pins are not soldered.** The board rests on the header rather

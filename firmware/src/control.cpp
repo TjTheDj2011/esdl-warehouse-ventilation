@@ -141,6 +141,13 @@ VentOutputs VentController::outputs_for(VentState s) {
   }
 }
 
+void VentController::reset_latches() {
+  hot_ = false;
+  cross_ = false;
+  seal_ = false;
+  fail_streak_ = 0;
+}
+
 const char* VentController::fan_name(FanDrive d) {
   switch (d) {
     case FanDrive::OFF: return "off";

@@ -468,7 +468,11 @@ void handle_command(char* line) {
     if (a1 && !strcmp(a1, "off")) {
       sim_active = false;
       sim_in_c = sim_out_c = NAN;
-      Serial.println(F("** simulation off -- real sensors back in the loop."));
+      // Drop the latches too. Without this the injected values keep deciding
+      // the state through the hysteresis band after the injection has stopped.
+      controller.reset_latches();
+      Serial.println(F("** simulation off -- real sensors back in the loop,"
+                       " latches cleared."));
     } else if (a1 && a2) {
       sim_in_c = f_to_c(atof(a1));
       sim_out_c = f_to_c(atof(a2));
