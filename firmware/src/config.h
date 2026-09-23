@@ -33,6 +33,13 @@ constexpr int PIN_EXHAUST_IN2  = 14;  // DRV8833 BIN2
 constexpr int PIN_DRV_NSLEEP   = 13;  // DRV8833 nSLEEP, HIGH = bridge enabled
 constexpr int PIN_BUZZER       = 23;  // buzzer module with onboard transistor
 
+// Measured on the bench 2026-09-23: this 3-pin module sounds when the signal
+// pin is pulled LOW and is silent when driven HIGH. Plenty of modules are
+// wired the other way, so this is a property of the part, not of the design.
+// Get it wrong and the alarm is inverted - silent during a fault and screaming
+// the rest of the time.
+constexpr bool BUZZER_ACTIVE_LOW = true;
+
 // ---- Timing -----------------------------------------------------------------
 // A DS18B20 conversion takes up to 750 ms at 12-bit resolution. We start both
 // conversions, come back for the results once they are ready, and only then

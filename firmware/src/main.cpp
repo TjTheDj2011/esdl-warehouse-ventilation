@@ -144,7 +144,8 @@ void buzzer_write(uint32_t now, BuzzerMode mode) {
     case BuzzerMode::STEADY: on = true; break;
     case BuzzerMode::PATTERN: on = ((now / BUZZ_PATTERN_MS) & 1u) != 0; break;
   }
-  digitalWrite(PIN_BUZZER, on ? HIGH : LOW);
+  const bool level = BUZZER_ACTIVE_LOW ? !on : on;
+  digitalWrite(PIN_BUZZER, level ? HIGH : LOW);
 }
 
 // What the control law is actually acting on. While simulation is active the
@@ -580,7 +581,9 @@ void setup() {
     digitalWrite(pin, LOW);
   }
   pinMode(PIN_BUZZER, OUTPUT);
-  digitalWrite(PIN_BUZZER, LOW);
+  // Silent level, not simply LOW - on an active-low module LOW is ON, which
+  // would have the alarm sounding from the moment it powers up.
+  digitalWrite(PIN_BUZZER, BUZZER_ACTIVE_LOW ? HIGH : LOW);
 
   digitalWrite(PIN_DRV_NSLEEP, HIGH);
 

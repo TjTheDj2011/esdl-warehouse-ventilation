@@ -61,6 +61,21 @@ All transitions matched `docs/03_control_matrix.md`. `fail=0` throughout.
    timing against a real `millis()` — neither of which the host harness
    reaches. It took the bench to find it.
 
+### Buzzer polarity — measured, not assumed
+
+The 3-pin active module sounds when its signal pin is pulled **LOW** and is
+silent when driven **HIGH**. Verified by holding GPIO 23 high and listening.
+Many modules are the opposite, so this is a property of this part.
+
+Two consequences, both fixed:
+
+- `buzzer_write()` now inverts via `BUZZER_ACTIVE_LOW` in config.h. Without it
+  the alarm is exactly backwards: silent during a fault, sounding the rest of
+  the time.
+- `setup()` was driving the pin LOW at boot, which on this module means the
+  alarm sounded from power-up before any logic ran. It now initialises to the
+  silent level.
+
 ### Outstanding at end of session
 
 **DRV8833 header pins are not soldered.** The board rests on the header rather
