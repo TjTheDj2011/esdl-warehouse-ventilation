@@ -32,13 +32,35 @@ DallasTemperature ds_inside(&bus_inside);
 DallasTemperature ds_outside(&bus_outside);
 VentController controller(default_vent_config());
 
-// Three panels: IN, OUT and STATE. Constructed up front; attach() probes the
-// buses and records which ones actually answered, so a missing panel never
-// stops the control loop.
-Adafruit_SSD1306 oled_in(OLED_W, OLED_H, &Wire, -1);
-Adafruit_SSD1306 oled_out(OLED_W, OLED_H, &Wire, -1);
-Adafruit_SSD1306 oled_state(OLED_W, OLED_H, &Wire1, -1);
-bool have_in = false, have_out = false, have_state = false;
+// Four possible panel slots: two addresses on each of the two buses. Roles are
+// assigned to whatever actually answers, in a fixed probe order, so the rig
+// works with two panels wired today and three once the third has had its
+// address pad moved - with no config edit in between.
+Adafruit_SSD1306 slot_dev0(OLED_W, OLED_H, &Wire, -1);
+Adafruit_SSD1306 slot_dev1(OLED_W, OLED_H, &Wire, -1);
+Adafruit_SSD1306 slot_dev2(OLED_W, OLED_H, &Wire1, -1);
+Adafruit_SSD1306 slot_dev3(OLED_W, OLED_H, &Wire1, -1);
+
+struct PanelSlot {
+  Adafruit_SSD1306* dev;
+  TwoWire* bus;
+  uint8_t addr;
+  uint8_t busno;
+};
+PanelSlot panel_slots[4] = {
+    {&slot_dev0, &Wire, 0x3C, 0},
+    {&slot_dev1, &Wire, 0x3D, 0},
+    {&slot_dev2, &Wire1, 0x3C, 1},
+    {&slot_dev3, &Wire1, 0x3D, 1},
+};
+
+// Roles, filled in probe order. A null pointer means that role has no panel,
+// which is reported but never fatal.
+Adafruit_SSD1306* oled_in = nullptr;
+Adafruit_SSD1306* oled_out = nullptr;
+Adafruit_SSD1306* oled_state = nullptr;
+int8_t slot_of_in = -1, slot_of_out = -1, slot_of_state = -1;
+uint8_t panels_found = 0;
 
 // ---- Live state -------------------------------------------------------------
 float t_inside_c = NAN;
@@ -125,6 +147,14 @@ void buzzer_write(uint32_t now, BuzzerMode mode) {
   digitalWrite(PIN_BUZZER, on ? HIGH : LOW);
 }
 
+// What the control law is actually acting on. While simulation is active the
+// trace and the panels must show the injected values, not the real sensors -
+// otherwise the display contradicts the state it is driving, which invites
+// exactly the wrong question during a demo. The S marker and the
+// [SIMULATED INPUT] tag are what tell you the numbers are not real.
+float shown_in_c() { return sim_active ? sim_in_c : t_inside_c; }
+float shown_out_c() { return sim_active ? sim_out_c : t_outside_c; }
+
 // ---- I2C / OLED -------------------------------------------------------------
 bool i2c_probe(TwoWire& bus, uint8_t addr) {
   bus.beginTransmission(addr);
@@ -139,20 +169,34 @@ int i2c_scan(TwoWire& bus, uint8_t* found, int max_found) {
   return n;
 }
 
-// Attach whatever answers. A missing panel is reported and skipped, never
-// fatal: the serial trace is the fallback display and the control loop must
-// keep running regardless.
+// Probe every slot and hand the found panels to roles in order: IN, OUT,
+// STATE. Two panels therefore give the two temperatures, which is what you
+// want while the third is still waiting on a soldering iron.
 void oled_attach() {
-  have_in = i2c_probe(Wire, OLED_ADDR_IN) &&
-            oled_in.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR_IN, false, false);
-  have_out = i2c_probe(Wire, OLED_ADDR_OUT) &&
-             oled_out.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR_OUT, false, false);
-  have_state = i2c_probe(Wire1, OLED_ADDR_STATE) &&
-               oled_state.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR_STATE, false, false);
-  for (auto* d : {&oled_in, &oled_out, &oled_state}) {
-    d->setTextColor(SSD1306_WHITE);
-    d->cp437(true);
+  oled_in = oled_out = oled_state = nullptr;
+  slot_of_in = slot_of_out = slot_of_state = -1;
+  panels_found = 0;
+
+  for (int i = 0; i < 4; ++i) {
+    PanelSlot& s = panel_slots[i];
+    if (!i2c_probe(*s.bus, s.addr)) continue;
+    if (!s.dev->begin(SSD1306_SWITCHCAPVCC, s.addr, false, false)) continue;
+    s.dev->setTextColor(SSD1306_WHITE);
+    s.dev->cp437(true);
+    if (!oled_in)        { oled_in = s.dev;    slot_of_in = i; }
+    else if (!oled_out)  { oled_out = s.dev;   slot_of_out = i; }
+    else if (!oled_state){ oled_state = s.dev; slot_of_state = i; }
+    ++panels_found;
   }
+}
+
+void report_panel(const char* role, int8_t slot) {
+  if (slot < 0) {
+    Serial.printf("OLED %-6s: NOT FOUND\n", role);
+    return;
+  }
+  Serial.printf("OLED %-6s: ok  (bus %u, 0x%02X)\n", role,
+                panel_slots[slot].busno, panel_slots[slot].addr);
 }
 
 // Largest built-in text size whose rendered width still fits the panel.
@@ -174,8 +218,10 @@ void draw_centred(Adafruit_SSD1306& d, const char* text, uint8_t size, int y) {
 }
 
 // One value panel: small label on top, the number as large as it will go.
-void draw_value_panel(Adafruit_SSD1306& d, const char* label, float celsius,
+void draw_value_panel(Adafruit_SSD1306* dp, const char* label, float celsius,
                       char marker) {
+  if (!dp) return;
+  Adafruit_SSD1306& d = *dp;
   char v[DISPLAY_FIELD_MAX];
   display_value(v, sizeof(v), celsius);
 
@@ -195,7 +241,9 @@ void draw_value_panel(Adafruit_SSD1306& d, const char* label, float celsius,
 
 // The state panel. Long labels wrap at the space rather than shrinking to
 // unreadable; FAULT additionally scrolls, because motion draws the eye.
-void draw_state_panel(Adafruit_SSD1306& d, VentState st, char marker) {
+void draw_state_panel(Adafruit_SSD1306* dp, VentState st, char marker) {
+  if (!dp) return;
+  Adafruit_SSD1306& d = *dp;
   d.stopscroll();               // must stop before writing, or RAM corrupts
   d.clearDisplay();
 
@@ -229,13 +277,13 @@ void oled_refresh() {
   const char marker = display_marker(sim_active, run_mode == RunMode::MANUAL);
   switch (oled_turn) {
     case 0:
-      if (have_in) draw_value_panel(oled_in, "IN", t_inside_c, marker);
+      draw_value_panel(oled_in, "IN", shown_in_c(), marker);
       break;
     case 1:
-      if (have_out) draw_value_panel(oled_out, "OUT", t_outside_c, marker);
+      draw_value_panel(oled_out, "OUT", shown_out_c(), marker);
       break;
     default:
-      if (have_state) draw_state_panel(oled_state, controller.state(), marker);
+      draw_state_panel(oled_state, controller.state(), marker);
       break;
   }
   oled_turn = (oled_turn + 1) % 3;
@@ -244,8 +292,8 @@ void oled_refresh() {
 // ---- Serial trace -----------------------------------------------------------
 void trace(uint32_t now, bool changed) {
   char ti[8], to[8];
-  display_value(ti, sizeof(ti), t_inside_c);
-  display_value(to, sizeof(to), t_outside_c);
+  display_value(ti, sizeof(ti), shown_in_c());
+  display_value(to, sizeof(to), shown_out_c());
   const VentOutputs o = controller.outputs();
   Serial.printf("[%8lu] %-12s in=%5sF out=%5sF intake=%s exhaust=%s fail=%u%s%s%s\n",
                 static_cast<unsigned long>(now),
@@ -305,9 +353,9 @@ void print_status() {
                 VentController::fan_name(o.intake),
                 VentController::fan_name(o.exhaust),
                 static_cast<int>(o.buzzer));
-  Serial.printf("panels        : IN %s  OUT %s  STATE %s\n",
-                have_in ? "ok" : "--", have_out ? "ok" : "--",
-                have_state ? "ok" : "--");
+  Serial.printf("panels        : %u found  (IN %s  OUT %s  STATE %s)\n",
+                panels_found, oled_in ? "ok" : "--", oled_out ? "ok" : "--",
+                oled_state ? "ok" : "--");
   Serial.printf("pins          : tempIn=%d tempOut=%d  i2c0=%d/%d i2c1=%d/%d\n",
                 PIN_TEMP_INSIDE, PIN_TEMP_OUTSIDE, PIN_I2C0_SDA,
                 PIN_I2C0_SCL, PIN_I2C1_SDA, PIN_I2C1_SCL);
@@ -382,9 +430,9 @@ void handle_command(char* line) {
     }
   } else if (!strcmp(cmd, "oled")) {
     oled_attach();
-    Serial.printf("panels: IN %s  OUT %s  STATE %s\n",
-                  have_in ? "ok" : "NOT FOUND", have_out ? "ok" : "NOT FOUND",
-                  have_state ? "ok" : "NOT FOUND");
+    report_panel("IN", slot_of_in);
+    report_panel("OUT", slot_of_out);
+    report_panel("STATE", slot_of_state);
     for (int i = 0; i < 3; ++i) oled_refresh();
   } else if (!strcmp(cmd, "intake")) {
     if (!motor_command(a1, manual_intake))
@@ -484,14 +532,14 @@ void boot_self_test() {
     for (int i = 0; i < n; ++i) Serial.printf("                 0x%02X\n", found[i]);
   }
 
-  Serial.printf("OLED IN        : %s\n", have_in ? "ok (bus 0, 0x3C)" : "NOT FOUND");
-  Serial.printf("OLED OUT       : %s\n", have_out ? "ok (bus 0, 0x3D)" : "NOT FOUND");
-  Serial.printf("OLED STATE     : %s\n", have_state ? "ok (bus 1, 0x3C)" : "NOT FOUND");
-  if (!have_in || !have_out || !have_state) {
-    Serial.println(F("                 a missing panel is not fatal - the serial"
-                     " trace is the fallback display."));
-    Serial.println(F("                 if OUT is missing, its address pad is"
-                     " probably still at 0x3C. `scan` to check."));
+  report_panel("IN", slot_of_in);
+  report_panel("OUT", slot_of_out);
+  report_panel("STATE", slot_of_state);
+  if (panels_found < 3) {
+    Serial.println(F("                 roles are filled in probe order, so two"
+                     " panels give you IN and OUT."));
+    Serial.println(F("                 wire one panel per bus while both are"
+                     " still at 0x3C."));
   }
 
   Serial.printf("DS18B20 inside : %d probe(s) on GPIO %d\n",
