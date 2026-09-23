@@ -1,7 +1,8 @@
 # Hardware Checklist
 
-Tick these off against the actual parts in front of you. Status as of
-2026-09-21, end of week 4 of 7 — about 2.5 weeks remain.
+**ALL PARTS PURCHASED AND ON HAND as of 2026-09-23.** Nothing outstanding.
+Week 5 of 7 — about 2 weeks remain. This list is now a pre-wiring reference
+rather than a shopping list; the live procedure is docs/02_bringup_guide.md.
 
 ---
 
@@ -9,22 +10,22 @@ Tick these off against the actual parts in front of you. Status as of
 
 | ✓ | Part | Qty | Check |
 |---|---|---|---|
-| ☐ | ESP32-WROOM-32 dev board | 1 + spares | USB-C, boots when plugged in |
-| ☐ | Breadboards, butted together | 2 | ESP32 seats with both pin rows accessible |
-| ☐ | **DS18B20** temperature sensor | 2 | Black TO-92 on a small board, marked `DS18B20` |
-| ☐ | **Elegoo SSD1306 OLED**, 0.96", 128x64, I2C | 3 | 4 pins: VCC GND SCL SDA · 3.3-5V · ~20 mA · **address select on the back, confirmed** |
-| ☐ | **Active buzzer** | 1 | Marked active. Makes a continuous tone on DC, not a click |
-| ☐ | Jumper wires | ~40 | Mix of M-M and M-F |
-| ☐ | Assorted resistors | — | Need 2x **4.7 kΩ** if the DS18B20s are bare (see §4) |
+| ☑ | ESP32-WROOM-32 dev board | 1 + spares | USB-C, boots when plugged in |
+| ☑ | Breadboards, butted together | 2 | ESP32 seats with both pin rows accessible |
+| ☑ | **DS18B20** temperature sensor | 2 | Black TO-92 on a small board, marked `DS18B20` |
+| ☑ | **Elegoo SSD1306 OLED**, 0.96", 128x64, I2C | 3 | 4 pins: VCC GND SCL SDA · 3.3-5V · ~20 mA · **address select on the back, confirmed** |
+| ☑ | **Active buzzer** | 1 | Marked active. Makes a continuous tone on DC, not a click |
+| ☑ | Jumper wires | ~40 | Mix of M-M and M-F |
+| ☑ | Assorted resistors | — | Need 2x **4.7 kΩ** if the DS18B20s are bare (see §4) |
 
-## 2. In the cart — confirm before checkout
+## 2. Fans and supply — IN HAND
 
 | ✓ | Part | Qty | Check the listing says |
 |---|---|---|---|
-| ☐ | 80 mm brushless fan, **5 V** | **2** | 5 V not 12 V · 2-pack not single · 80x80 frame |
-| ☐ | 5 V **2 A** wall supply | 1 | 5 V, 2 A, and it ships with the screw-terminal adapter |
+| ☑ | 80 mm brushless fan, **5 V** | 2 | 8010 dual ball bearing · 20 CFM · 22 dBA · 0.1 A each |
+| ☑ | 5 V **2 A** wall supply | 1 | Ships with its screw-terminal adapter · polarity marked |
 
-## 3. Still to buy — NOTHING
+## 3. Still to buy — NOTHING. Purchasing is complete.
 
 | ✓ | Part | Qty | ~$ | Note |
 |---|---|---|---|---|
@@ -47,25 +48,25 @@ Leave the other two at 0x3C. Do one, verify it with the firmware self-test
 **☑ Supply polarity — MARKED. CONFIRMED 2026-09-21.**
 Terminals are labelled. Wire + to the fan rail, − to the common ground rail.
 
-## 5. Mechanical — still to source
+## 5. Mechanical — IN HAND
 
 | ✓ | Item | ~$ | Note |
 |---|---|---|---|
-| ☐ | Clear plastic tote | 8–15 | **Polypropylene, not acrylic** — acrylic cracks when drilled |
-| ☐ | 76 mm hole saw or step bit | 8–15 | For the two fan openings |
-| ☐ | 4.5 mm drill bit | — | For the fan screw holes |
-| ☐ | M4 screws, nuts, washers | 5 | 8 of each — four per fan |
-| ☐ | Foam weatherstrip tape | 3 | Gasket between fan and tote; kills vibration |
-| ☐ | Hair dryer | on hand? | Demo heat source. **Not a heat gun** — it melts polypropylene |
-| ☐ | Masking tape | ~0 | Labelling the four power rails |
+| ☑ | Clear plastic tote | 8–15 | **Polypropylene, not acrylic** — acrylic cracks when drilled |
+| ☑ | 76 mm hole saw or step bit | 8–15 | For the two fan openings |
+| ☑ | 4.5 mm drill bit | — | For the fan screw holes |
+| ☑ | M4 screws, nuts, washers | 5 | 8 of each — four per fan |
+| ☑ | Foam weatherstrip tape | 3 | Gasket between fan and tote; kills vibration |
+| ☑ | Hair dryer | on hand? | Demo heat source. **Not a heat gun** — it melts polypropylene |
+| ☑ | Masking tape | ~0 | Labelling the four power rails |
 
 ## 6. Tools
 
 | ✓ | Item | Needed for |
 |---|---|---|
-| ☐ | Drill | Fan holes |
-| ☐ | Multimeter | Supply polarity, continuity. Borrow from the lab if needed |
-| ☐ | Soldering iron | Only to tin the fan leads after cutting connectors. Optional |
+| ☑ | Drill | Fan holes |
+| ☑ | Multimeter | Supply polarity, continuity. Borrow from the lab if needed |
+| ☑ | Soldering iron | Only to tin the fan leads after cutting connectors. Optional |
 
 ---
 
@@ -86,8 +87,7 @@ Struck through because the design moved on — do not buy these:
 
 ## Bottom line
 
-**ELECTRONICS COMPLETE.** Every part is in hand and every open question in §4 is
-answered. Nothing further to buy on the electrical side.
+**EVERYTHING IS ON HAND.** Electronics, fans, supply, enclosure and tools.
+Nothing left to buy and no open questions.
 
-Remaining work is mechanical (§5) and bring-up. Wiring can start now - the
-electronics do not depend on the enclosure.
+Next step is bring-up: docs/02_bringup_guide.md, one peripheral at a time.
