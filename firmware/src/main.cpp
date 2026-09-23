@@ -294,7 +294,13 @@ void trace(uint32_t now, bool changed) {
   char ti[8], to[8];
   display_value(ti, sizeof(ti), shown_in_c());
   display_value(to, sizeof(to), shown_out_c());
-  const VentOutputs o = controller.outputs();
+  // Report what is ACTUALLY driving the pins. In manual mode the control
+  // law's opinion is not what the hardware is doing, and a trace that
+  // shows the wrong one cannot be used to verify a fan command.
+  const VentOutputs o = (run_mode == RunMode::MANUAL)
+                            ? VentOutputs{manual_intake, manual_exhaust,
+                                          manual_buzzer}
+                            : controller.outputs();
   Serial.printf("[%8lu] %-12s in=%5sF out=%5sF intake=%s exhaust=%s fail=%u%s%s%s\n",
                 static_cast<unsigned long>(now),
                 VentController::state_name(controller.state()), ti, to,
@@ -362,6 +368,10 @@ void print_status() {
   Serial.printf("                intake=%d/%d exhaust=%d/%d nsleep=%d buzzer=%d\n",
                 PIN_INTAKE_IN1, PIN_INTAKE_IN2, PIN_EXHAUST_IN1, PIN_EXHAUST_IN2,
                 PIN_DRV_NSLEEP, PIN_BUZZER);
+  if (run_mode == RunMode::MANUAL)
+    Serial.printf("manual for    : %lu s of %lu\n",
+                  (unsigned long)(static_cast<int32_t>(millis() - manual_since) / 1000),
+                  (unsigned long)(MANUAL_TIMEOUT_MS / 1000));
   Serial.printf("uptime        : %lu s\n\n",
                 static_cast<unsigned long>(millis() / 1000));
 }
@@ -626,8 +636,13 @@ void loop() {
   }
 
   // Bench safety: never leave a motor running unattended.
-  if (run_mode == RunMode::MANUAL &&
-      static_cast<uint32_t>(now - manual_since) >= MANUAL_TIMEOUT_MS) {
+  //
+  // Must use due()'s signed difference, not an unsigned subtraction. `now` is
+  // captured at the top of loop() but poll_console() calls millis() again a
+  // few microseconds later, so manual_since can be GREATER than now. Unsigned,
+  // that underflows to ~4.29e9 and the timeout fires instantly - which is
+  // exactly what stopped the fans from ever spinning on the bench.
+  if (run_mode == RunMode::MANUAL && due(now, manual_since + MANUAL_TIMEOUT_MS)) {
     Serial.println(F("** manual override timed out -- returning to AUTO."));
     enter_auto();
   }
