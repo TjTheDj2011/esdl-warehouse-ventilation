@@ -443,6 +443,13 @@ void run_probe(int in1, int in2, const char* label) {
 void run_node_test() {
   Serial.println(F("\n--- node classifier ---"));
 
+  // Coast both bridges first. OFF is BRAKE in this firmware, which actively
+  // holds the outputs at ground, so classifying an output straight after a
+  // probe run reports our own command back as a short in the board.
+  digitalWrite(PIN_INTAKE_IN1, LOW);  digitalWrite(PIN_INTAKE_IN2, LOW);
+  digitalWrite(PIN_EXHAUST_IN1, LOW); digitalWrite(PIN_EXHAUST_IN2, LOW);
+  delay(30);
+
   pinMode(PIN_SENSE, INPUT_PULLUP);    delay(60);
   const int up = digitalRead(PIN_SENSE);
   pinMode(PIN_SENSE, INPUT_PULLDOWN);  delay(60);
