@@ -104,6 +104,13 @@ Everything either side of that link is proven: the trace shows the ESP32 holding
 `intake=fwd`, and both fans run direct from the same 5 V rail. Soldering is the
 only remaining fault.
 
+> **Withdrawn 2026-09-24.** This was wrong. The pins were present and correctly
+> soldered; a seated module hides them inside the breadboard holes, and the
+> diagnosis was made from a photograph rather than a measurement. The actual
+> fault was a dead DRV8833 — see Session 2, where the replacement passed every
+> output test with the same wiring. Left in place rather than deleted so the
+> report does not cite a conclusion whose retraction is invisible.
+
 Also outstanding: third OLED still needs its address pad moved to 0x3D, and the
 buzzer is not yet wired.
 
