@@ -331,9 +331,32 @@ float sense_volts() {
 
 void run_diagnostics() {
   Serial.println(F("\n--- driver diagnostics ---"));
-  Serial.printf("DRV8833 FAULT pin : %s\n",
-                drv_faulted() ? "LOW  <-- CHIP IS REPORTING A FAULT"
-                              : "high (no fault reported)");
+
+  // nFAULT is open drain, so an UNWIRED pin reads high on our internal pull-up
+  // and looks exactly like a healthy chip. Pull it down instead: only an
+  // external pull-up on the module can hold it high against that, so this
+  // separates "no fault" from "no wire" rather than reporting the same word
+  // for both.
+  pinMode(PIN_DRV_FAULT, INPUT_PULLDOWN);
+  delay(20);
+  const bool fault_wired = digitalRead(PIN_DRV_FAULT) == HIGH;
+  pinMode(PIN_DRV_FAULT, INPUT_PULLUP);
+  delay(20);
+  if (!fault_wired) {
+    // Only a module that fits its own pull-up on nFAULT can be detected this
+    // way. A breakout exposing the bare open-drain pin reads identically wired
+    // or not, because a healthy chip releases it either way. Say that, rather
+    // than reporting a missing wire we cannot actually see.
+    Serial.printf("DRV8833 FAULT pin : reads %s, no external pull-up found\n",
+                  drv_faulted() ? "LOW" : "high");
+    Serial.println(F("  Cannot confirm the wire: this module has no pull-up on"));
+    Serial.println(F("  nFAULT, so wired and unwired look the same while the"));
+    Serial.println(F("  chip is healthy. A real fault still pulls it LOW."));
+  } else {
+    Serial.printf("DRV8833 FAULT pin : wired, %s\n",
+                  drv_faulted() ? "LOW  <-- CHIP IS REPORTING A FAULT"
+                                : "high (no fault reported)");
+  }
   if (digitalRead(PIN_DRV_NSLEEP)) {
     Serial.println(F("nSLEEP driven     : HIGH (enabled)"));
   } else {
