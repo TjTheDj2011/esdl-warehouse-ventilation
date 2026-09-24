@@ -54,7 +54,24 @@ Safe working pins on this board: **4, 13, 14, 16, 17, 18, 19, 21, 22, 23, 25, 26
 | DRV8833 nSLEEP | 13 | Drive HIGH to enable the bridge. |
 | Buzzer | 23 | Buzzer *module* with onboard transistor. |
 
-Unassigned and free for expansion: **19, 32, 33**.
+| DRV8833 nFAULT (optional) | 19 | Open-drain, `INPUT_PULLUP`. See the caveat below. |
+| Bench probe / sense | 32 | Continuity probe and node classifier. Not needed for the demo. |
+
+**GPIO 33 must be left unwired.** The `node` classifier reads it as a control to
+prove the pull resistors and the read path work before it reports a verdict on
+any other node. Wire something to 33 and the classifier can no longer tell a
+genuine short from a firmware fault.
+
+**nFAULT proves less than it looks like it does.** It is open-drain, held up by
+the internal pull-up, so an *unpowered or absent* DRV8833 reads exactly the same
+"no fault" as a healthy one. It can confirm a fault; it can never confirm health.
+
+**Never leave a bare jumper from GPIO 32 to an OUT pin while the fans can run.**
+A driven output sits at VM (5 V) and the ESP32 is not 5 V tolerant. `probe` is
+safe because it only ever uses coast and brake, which never drive an output high;
+`diag` skips its FORWARD step for the same reason unless `SENSE_HAS_DIVIDER` is
+set. For permanent monitoring, fit a 1:1 divider (two equal resistors, 10k/10k)
+from the output to ground and tap the middle.
 
 **Why two I2C buses.** Three identical SSD1306 panels are hardwired to 0x3C,
 and the address-select pad on the back offers only one alternative, 0x3D. Two
