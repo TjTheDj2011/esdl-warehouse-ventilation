@@ -121,19 +121,24 @@ VentOutputs VentController::outputs_for(VentState s) {
       // hottest layer; makeup air enters low through the idle intake fan.
       // That ingress is harmless here by construction: if outside were
       // meaningfully hotter we would be in SEALED, not this state.
-      return {FanDrive::OFF, FanDrive::FORWARD, BuzzerMode::STEADY};
+      // No standing alarm: the entry chirp announces it, and the exhaust
+      // running is itself visible. A continuous tone here would cry wolf for a
+      // condition the system is actively handling.
+      return {FanDrive::OFF, FanDrive::FORWARD, BuzzerMode::OFF};
 
     case VentState::SEALED:
-      // Both fans braked: stop importing heat we cannot remove. The alarm
-      // sounds because the system is thermally cornered and a human should
-      // know -- this is the one condition two fans cannot fix.
-      return {FanDrive::OFF, FanDrive::OFF, BuzzerMode::STEADY};
+      // Both fans braked: stop importing heat we cannot remove. Announced by
+      // the entry chirp rather than a standing tone -- the controller is
+      // thermally cornered but not broken, and its sensors are still good.
+      return {FanDrive::OFF, FanDrive::OFF, BuzzerMode::OFF};
 
     case VentState::FAULT:
       // Temperatures are untrustworthy. Exhausting bounds the chamber near
       // ambient; sealing would let an unattended heat source run away with no
       // bound at all. Bounded beats unbounded, so we flush. Distinct pattern.
-      return {FanDrive::OFF, FanDrive::FORWARD, BuzzerMode::PATTERN};
+      // Continuous tone. This is the only state where the controller does not
+      // know the temperature, so it is the only one that sounds until fixed.
+      return {FanDrive::OFF, FanDrive::FORWARD, BuzzerMode::STEADY};
 
     case VentState::STANDBY:
     default:

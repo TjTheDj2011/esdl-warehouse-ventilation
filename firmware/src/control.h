@@ -28,9 +28,18 @@ enum class FanDrive : uint8_t {
 
 enum class BuzzerMode : uint8_t {
   OFF = 0,
-  STEADY,   // critical thermal overload (EXHAUST_ONLY)
-  PATTERN,  // sensor fault, intermittent
+  // A continuous tone means the controller cannot trust its own inputs. It is
+  // deliberately the only steady sound, so "something is broken" is never
+  // confused with "the system is working hard".
+  STEADY,
+  // Intermittent. Not produced by any state; kept so the bench console can
+  // exercise the buzzer with a second distinguishable sound.
+  PATTERN,
 };
+
+// Every state change also fires three short chirps, driven in main.cpp rather
+// than here: it marks an event, not a condition, so it is not a property of
+// the state the controller is in.
 
 struct VentOutputs {
   FanDrive intake;

@@ -137,15 +137,52 @@ void motor_drive(int in1, int in2, FanDrive d) {
   }
 }
 
+// Three short chirps on every state change. This announces an *event* - the
+// controller just decided something and the fans are about to move - which is
+// what an audience needs during a demonstration. It is deliberately short and
+// deliberately not the same sound as a fault: a continuous tone means the
+// controller cannot trust its sensors and needs a human, and that distinction
+// is lost if the buzzer is also the routine "I did a thing" noise.
+constexpr uint32_t CHIRP_ON_MS  = 70;
+constexpr uint32_t CHIRP_GAP_MS = 90;
+constexpr uint8_t  CHIRP_COUNT  = 3;
+constexpr uint32_t CHIRP_SLOT_MS  = CHIRP_ON_MS + CHIRP_GAP_MS;
+constexpr uint32_t CHIRP_TOTAL_MS = CHIRP_COUNT * CHIRP_SLOT_MS;
+
+uint32_t chirp_started = 0;
+bool     chirp_running = false;
+
+void start_chirp(uint32_t now) {
+  chirp_started = now;
+  chirp_running = true;
+}
+
+void buzzer_raw(bool on) {
+  const bool level = BUZZER_ACTIVE_LOW ? !on : on;
+  digitalWrite(PIN_BUZZER, level ? HIGH : LOW);
+}
+
 void buzzer_write(uint32_t now, BuzzerMode mode) {
+  // The chirp takes priority while it runs, so a transition is audible even
+  // when the state it lands in is silent. Signed difference, not unsigned
+  // subtraction, so a millis() rollover mid-chirp cannot strand it on.
+  if (chirp_running) {
+    const int32_t elapsed = static_cast<int32_t>(now - chirp_started);
+    if (elapsed >= 0 && elapsed < static_cast<int32_t>(CHIRP_TOTAL_MS)) {
+      const uint32_t slot = static_cast<uint32_t>(elapsed) % CHIRP_SLOT_MS;
+      buzzer_raw(slot < CHIRP_ON_MS);
+      return;
+    }
+    chirp_running = false;
+  }
+
   bool on = false;
   switch (mode) {
     case BuzzerMode::OFF: on = false; break;
     case BuzzerMode::STEADY: on = true; break;
     case BuzzerMode::PATTERN: on = ((now / BUZZ_PATTERN_MS) & 1u) != 0; break;
   }
-  const bool level = BUZZER_ACTIVE_LOW ? !on : on;
-  digitalWrite(PIN_BUZZER, level ? HIGH : LOW);
+  buzzer_raw(on);
 }
 
 // What the control law is actually acting on. While simulation is active the
@@ -907,6 +944,7 @@ void loop() {
 
     if (controller.state() != last_state) {
       last_state = controller.state();
+      start_chirp(now);
       trace(now, true);
       reschedule(now, due_trace, TRACE_PERIOD_MS);
     }

@@ -114,7 +114,8 @@ int main() {
     check(r.out().intake == FanDrive::OFF &&
               r.out().exhaust == FanDrive::FORWARD,
           "intake stops, exhaust runs: makeup air enters through the idle fan", r);
-    check(r.out().buzzer == BuzzerMode::STEADY, "thermal overload alarm sounds", r);
+    check(r.out().buzzer == BuzzerMode::OFF,
+          "no standing tone: sensors are good, entry chirp announces it", r);
   }
 
   {
@@ -140,7 +141,8 @@ int main() {
           "FAULT fails SAFE: exhaust stays driven", r);
     check(r.out().intake == FanDrive::OFF,
           "intake stopped; exhaust alone bounds the chamber near ambient", r);
-    check(r.out().buzzer == BuzzerMode::PATTERN, "fault pattern audible", r);
+    check(r.out().buzzer == BuzzerMode::STEADY,
+          "continuous tone: the only state that cannot trust its sensors", r);
   }
 
   {
@@ -286,8 +288,8 @@ int main() {
           "85F in / 110F out seals instead of ventilating", r);
     check(r.out().intake == FanDrive::OFF && r.out().exhaust == FanDrive::OFF,
           "both fans braked: zero forced exchange with hotter air", r);
-    check(r.out().buzzer != BuzzerMode::OFF,
-          "alarm sounds -- two fans cannot fix this condition", r);
+    check(r.out().buzzer == BuzzerMode::OFF,
+          "cornered but not broken: chirp on entry, no standing tone", r);
   }
 
   {

@@ -233,3 +233,64 @@ real heat source, with no manual commands.
 OLED panels and buzzer not yet reconnected. `status` misreports the `outputs`
 line during manual override - it prints the control law's desired outputs rather
 than the pins actually being driven. Cosmetic; the telemetry line is correct.
+
+### Full system restored, and the buzzer redesigned — 2026-09-24
+
+All subsystems back after the rebuild, brought up one at a time:
+
+| Subsystem | Evidence |
+|---|---|
+| DS18B20 inside (GPIO 4) | ok, `fail=0` |
+| DS18B20 outside (GPIO 16 / **RX2**) | ok, `fail=0` after moving to the right pin |
+| OLED IN | bus 0 @ 0x3C, rendering |
+| OLED OUT | bus 1 @ 0x3D, rendering |
+| OLED STATE | bus 1 @ 0x3C, rendering — all three panels live |
+| Buzzer | both sounds confirmed by ear |
+| Both fans | run under firmware control |
+
+Three panels on two buses, with the modified 0x3D panel sharing bus 1 with an
+unmodified 0x3C one. Adding the panels did not disturb the 1-wire sensors.
+
+**Buzzer semantics changed on TJ's call.** Previously EXHAUST_ONLY and SEALED
+held a continuous tone and FAULT beeped intermittently. Standing next to that
+for a whole demonstration is punishing, and it also spends the loudest signal
+the system has on conditions where nothing is actually broken.
+
+Now:
+
+- **Three short chirps on every state change.** Announces an *event* - the
+  controller just decided something and the fans are about to move - which is
+  what an audience needs in order to look up at the right moment.
+- **Continuous tone only in FAULT.** The one state where the controller cannot
+  trust its own sensors. Reserving the steady sound for it means "broken" is
+  never confused with "working hard".
+
+EXHAUST_ONLY and SEALED are announced by their entry chirp and by the visible
+fan behaviour. They are conditions the controller is handling correctly with
+good data, so they no longer sound an alarm.
+
+Implemented in `main.cpp`, not in the control law: a chirp marks a transition,
+not a state, so it is not a property of the state being entered. The chirp takes
+priority over the steady mode while it runs, and uses a signed time difference
+so a `millis()` rollover mid-chirp cannot strand the buzzer on.
+
+Host suite updated and passing: **54 checks, 0 failures.**
+
+### Full state sweep on hardware, after the change
+
+| Injected in/out (F) | State | Intake | Exhaust | |
+|---|---|---|---|---|
+| 85 / 65 | CROSS_VENT | fwd | fwd | OK |
+| 85 / 84 | EXHAUST_ONLY | off | fwd | OK |
+| 85 / 95 | SEALED | off | off | OK |
+| 85 / 65 | CROSS_VENT | fwd | fwd | OK — **seal released on its own** |
+| 78 / 65 | CROSS_VENT | fwd | fwd | OK — **hysteresis holds inside the band** |
+| 74 / 65 | STANDBY | off | off | OK |
+
+Two of those answer questions the design is likely to be challenged on. The
+seal releasing by itself when cool air returns shows `SEALED` cannot deadlock:
+the condition that causes it is the condition that clears it. Holding
+CROSS_VENT at 78 F shows the hysteresis is real rather than a bare threshold -
+a `>` comparison would have dropped out at 79.9 F and chattered.
+
+Returned to live sensors cleanly afterwards with no latch carry-over.
