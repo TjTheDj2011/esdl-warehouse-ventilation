@@ -106,3 +106,77 @@ only remaining fault.
 
 Also outstanding: third OLED still needs its address pad moved to 0x3D, and the
 buzzer is not yet wired.
+
+---
+
+## Session 2 — 2026-09-24
+
+Actuator chain proven end to end. **Both fans run under firmware control.**
+
+### What was actually wrong
+
+The first DRV8833 was dead. Not miswired, not unpowered — dead. Replacing it
+and resoldering the header fixed the build with no change to the wiring plan or
+the firmware's control path.
+
+Getting to that took most of a day, and three of the false trails were the
+bench instrument's own bugs rather than faults in the board:
+
+| Instrument bug | What it falsely reported |
+|---|---|
+| `wire` probe left its drive pin LOW on exit | Sweeping nSLEEP stranded the driver asleep; every later probe read the outputs as dead |
+| Sense pin configured `INPUT` with no pull | Random noise read as `INTERMITTENT 1/6` on a good wire |
+| `node` classified an output left in BRAKE | A healthy OUT1 reported as `TIED TO GROUND — a real short` |
+
+All three are fixed and committed. The lesson is recorded in
+`hardware/03_rebuild_layout.md`: the classifier now validates itself against
+unwired GPIO 33 before it reports a verdict on anything.
+
+Two conclusions stated with more confidence than the evidence supported, both
+later withdrawn: that the header pins were missing (read from a photo — they
+were present and correctly soldered), and that a FAULT wire was absent (this
+module has no pull-up on nFAULT, so wired and unwired read identically while
+the chip is healthy).
+
+### Measurements — new driver, nothing attached
+
+Probe on each output in turn, bridges coasted between readings:
+
+| Node | `probe` | `node` | Cross-check |
+|---|---|---|---|
+| OUT1 | CONNECTED (6/6) | FLOATING | — |
+| OUT2 | CONNECTED (6/6) | FLOATING | — |
+| OUT3 | CONNECTED (6/6) | FLOATING | `probe a` NOT CONNECTED |
+| OUT4 | CONNECTED (6/6) | FLOATING | `probe a` NOT CONNECTED |
+
+`coast=HIGH brake=LOW` on all four. The cross-check matters: the intake bridge
+cannot reach the exhaust outputs, so the probe is measuring the specific node
+rather than something global. Instrument control (unwired GPIO 33) read
+`floating` in every run.
+
+For contrast, the dead board measured OUT1/OUT2 `coast=HIGH brake=HIGH`
+(outputs never driven) and OUT3 `pullup=LOW pulldown=LOW`, 3/3 — tied to ground
+with nothing attached.
+
+### Measurements — fans
+
+| Test | Result |
+|---|---|
+| Intake alone, `intake on`, red→OUT1 black→OUT2 | **Spins.** `intake=fwd`, no fault |
+| Exhaust alone, red→OUT3 black→OUT4 | **Spins.** Driven by `FAULT` state fail-safe, not a manual command |
+| Both fans, 12 s continuous | **Both spin.** 0 reboots, 0 brownout indicators, FAULT never asserted, serial never dropped |
+
+The exhaust result is worth noting: it ran because the controller was in `FAULT`
+with no sensors attached, and `FAULT` fail-safes to exhaust-on. That rule fired
+for real on hardware rather than in simulation.
+
+Both fans together is the CROSS_VENT load case. The 5 V supply held it with no
+sign of sag, which was the open question about running both channels at once.
+
+### Still outstanding
+
+- Temperature sensors, OLED panels and buzzer not yet reconnected after the
+  rebuild — the driver was brought up alone, deliberately.
+- Third OLED still needs its address pad moved to 0x3D.
+- `nFAULT` cannot be verified by self-test on this module; it only reports a
+  real fault.
