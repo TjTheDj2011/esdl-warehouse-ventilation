@@ -433,6 +433,51 @@ void run_probe(int in1, int in2, const char* label) {
   Serial.println(F("--------------------------------\n"));
 }
 
+// Node classifier. Answers "is this node really grounded, or is the firmware
+// lying to me?" without trusting a single reading.
+//
+// A node is read twice, once pulled up and once pulled down. Floating follows
+// the pull; tied does not. GPIO 33 is read the same way as a control - nothing
+// is wired to it, so it MUST come back floating. If the control fails, the pull
+// resistors or the read path are broken and every other number here is void.
+void run_node_test() {
+  Serial.println(F("\n--- node classifier ---"));
+
+  pinMode(PIN_SENSE, INPUT_PULLUP);    delay(60);
+  const int up = digitalRead(PIN_SENSE);
+  pinMode(PIN_SENSE, INPUT_PULLDOWN);  delay(60);
+  const int dn = digitalRead(PIN_SENSE);
+
+  const int ctl = 33;  // deliberately unwired
+  pinMode(ctl, INPUT_PULLUP);           delay(60);
+  const int cup = digitalRead(ctl);
+  pinMode(ctl, INPUT_PULLDOWN);         delay(60);
+  const int cdn = digitalRead(ctl);
+
+  Serial.printf("CONTROL GPIO %d (nothing wired): pullup=%s pulldown=%s -> %s\n",
+                ctl, cup ? "HIGH" : "LOW ", cdn ? "HIGH" : "LOW ",
+                (cup == HIGH && cdn == LOW) ? "floating, as it must be"
+                                            : "*** CONTROL FAILED ***");
+  if (!(cup == HIGH && cdn == LOW)) {
+    Serial.println(F("The pull resistors or the read path are broken."));
+    Serial.println(F("Ignore the result below - this is a firmware fault."));
+    Serial.println(F("--------------------------------\n"));
+    return;
+  }
+
+  Serial.printf("GPIO %d (your probe):          pullup=%s pulldown=%s\n",
+                PIN_SENSE, up ? "HIGH" : "LOW ", dn ? "HIGH" : "LOW ");
+  if (up == HIGH && dn == LOW)
+    Serial.println(F("VERDICT: FLOATING. Nothing is driving this node."));
+  else if (up == LOW && dn == LOW)
+    Serial.println(F("VERDICT: TIED TO GROUND. It beats a 45k pullup - a real short."));
+  else if (up == HIGH && dn == HIGH)
+    Serial.println(F("VERDICT: TIED HIGH. Something holds this node at a rail."));
+  else
+    Serial.println(F("VERDICT: unstable - reads differently run to run."));
+  Serial.println(F("--------------------------------\n"));
+}
+
 // Wire tester. Toggles one ESP32 output and checks whether PIN_SENSE follows
 // it. Touch the sense jumper to the far end of a wire - a driver input pad,
 // say - and this proves whether the signal actually arrives there. Tests the
@@ -607,6 +652,8 @@ void handle_command(char* line) {
         Serial.println(F("  nothing answered - check SDA/SCL not swapped,"
                          " 3.3 V present, common ground."));
     }
+  } else if (!strcmp(cmd, "node")) {
+    run_node_test();
   } else if (!strcmp(cmd, "diag")) {
     run_diagnostics();
   } else if (!strcmp(cmd, "wire")) {
