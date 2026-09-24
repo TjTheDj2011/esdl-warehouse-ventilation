@@ -295,9 +295,18 @@ void draw_state_panel(Adafruit_SSD1306* dp, VentState st, char marker) {
     const size_t cut = sp ? static_cast<size_t>(sp - text) : strlen(text);
     snprintf(head, sizeof(head), "%.*s", static_cast<int>(cut), text);
     snprintf(tail, sizeof(tail), "%s", sp ? sp + 1 : "");
-    const uint8_t s2 = min(fit_size(head, 4), fit_size(tail, 4));
-    draw_centred(d, head, s2, 12);
-    draw_centred(d, tail, s2, 12 + 8 * s2 + 4);
+    // fit_size() only considers WIDTH. Two short words both pass at size 4,
+    // which is 32 px per line: stacked with a gap that runs to y=80 on a 64 px
+    // panel and the second line is cut off. Cap by the height actually
+    // available, then centre the pair vertically instead of hanging it off a
+    // fixed top margin.
+    constexpr int GAP = 4;
+    uint8_t s2 = min(fit_size(head, 4), fit_size(tail, 4));
+    while (s2 > 1 && (16 * s2 + GAP) > OLED_H) --s2;
+    const int block = 16 * s2 + GAP;
+    const int top = (OLED_H - block) / 2;
+    draw_centred(d, head, s2, top);
+    draw_centred(d, tail, s2, top + 8 * s2 + GAP);
   }
   if (marker) {
     d.setTextSize(1);

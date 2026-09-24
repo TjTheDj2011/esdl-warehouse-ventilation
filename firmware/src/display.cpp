@@ -14,7 +14,7 @@ void display_value(char* out, size_t n, float celsius) {
 const char* display_state_text(VentState s) {
   switch (s) {
     case VentState::STANDBY: return "IDLE";
-    case VentState::CROSS_VENT: return "X-VENT";
+    case VentState::CROSS_VENT: return "CROSS VENT";
     case VentState::EXHAUST_ONLY: return "EXHAUST";
     case VentState::SEALED: return "SEALED";
     case VentState::FAULT: return "SENSOR FAULT";

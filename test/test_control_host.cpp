@@ -230,6 +230,24 @@ int main() {
       if ((st == VentState::FAULT) != scrolls) scroll_only_fault = false;
     }
     check(labelled, "every state has a short and a long label", r);
+
+    // The renderer stacks a label at its space, so each half is drawn on its
+    // own line. At text size 3 - the smallest that reads across a room - a
+    // character is 6*3 px wide, giving 128/18 = 7 characters per line. A label
+    // whose word exceeds that is silently shrunk until it cannot be read, so
+    // it is caught here rather than on the bench the night before a demo.
+    bool label_fits = true;
+    const char* oversize = "";
+    for (VentState st : states) {
+      const char* txt = display_state_text(st);
+      const char* sp = std::strchr(txt, ' ');
+      const size_t head = sp ? static_cast<size_t>(sp - txt) : std::strlen(txt);
+      const size_t tail = sp ? std::strlen(sp + 1) : 0;
+      if (head > 7 || tail > 7) { label_fits = false; oversize = txt; }
+    }
+    check(label_fits, label_fits
+              ? "every label word fits one line at a readable size"
+              : oversize, r);
     check(scroll_only_fault,
           "only FAULT scrolls - static text reads faster at a glance", r);
 

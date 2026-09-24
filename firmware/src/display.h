@@ -24,8 +24,11 @@ constexpr size_t DISPLAY_FIELD_MAX = 8;
 // A failed sensor must never render as a plausible number such as 0.0.
 void display_value(char* out, size_t n, float celsius);
 
-// Short word for the big state panel. Kept deliberately brief so it can be
-// drawn at a size readable across a room.
+// Label for the big state panel. The renderer splits it at the SPACE and
+// stacks the two halves when it will not fit on one line at a readable size,
+// so a two-word label spells itself out instead of being abbreviated. The
+// space is therefore load-bearing: each half must fit on its own line, which
+// host check [12] enforces. Single words must stay within that limit too.
 const char* display_state_text(VentState s);
 
 // Longer wording for the serial trace and for reports, where width is free.

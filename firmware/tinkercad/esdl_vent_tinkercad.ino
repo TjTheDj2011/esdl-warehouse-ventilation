@@ -186,7 +186,7 @@ void driveBuzzer(unsigned long now) {
 const char* stateLabel() {
   switch (state) {
     case STANDBY:      return "STATE: STANDBY";
-    case CROSS_VENT:   return "STATE: X-VENT";
+    case CROSS_VENT:   return "STATE: CROSS VENT";
     case EXHAUST_ONLY: return "STATE: EXHAUST";
     case SEALED:       return "STATE: SEALED";
     case FAULT:        return "!! SENSOR FAULT";

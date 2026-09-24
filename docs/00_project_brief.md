@@ -38,7 +38,7 @@ drives a dual-fan exhaust/intake setup with no human intervention.
 | State | Entry condition | Intake | Exhaust | Buzzer | LCD |
 |---|---|---|---|---|---|
 | `STANDBY`      | T_in < 80F                       | OFF | OFF | off | `IDLE`    |
-| `CROSS_VENT`   | T_in > 80F AND outside >=2F cooler | ON  | ON  | off | `X-VENT`  |
+| `CROSS_VENT`   | T_in > 80F AND outside >=2F cooler | ON  | ON  | off | `CROSS`/`VENT` |
 | `EXHAUST_ONLY` | T_in > 80F AND outside within 3F | OFF | ON  | ON  | `EXHAUST` |
 | `SEALED` (added)| T_in > 80F AND outside >=3F HOTTER | OFF | OFF | ON | `SEALED` |
 | `FAULT` (added)| N consecutive bad sensor reads   | OFF | ON  | pattern | `SENSOR FAULT` (scrolls) |
@@ -74,8 +74,11 @@ makes the chamber hotter.
 
 Display note: three OLED panels replaced the 16x2 LCD on 2026-09-18. Each value
 gets a whole 128x64 panel, so text renders larger than the LCD managed. State
-words are kept short (IDLE / X-VENT / EXHAUST / SEALED); SENSOR FAULT wraps to
-two lines and scrolls, because motion draws the eye when something is wrong.
+labels are spelled out rather than abbreviated: a label containing a space is
+split and stacked on two lines (CROSS / VENT, SENSOR / FAULT), so no word has
+to be decoded from a contraction. Each half must fit one line at text size 3,
+the smallest readable across a room - host check [12] enforces it. FAULT also
+scrolls, because motion draws the eye when something is wrong.
 
 ## Standing engineering constraints (decided — do not silently regress)
 - **Hysteresis is mandatory.** ON at 80.0F / OFF at 77.0F + minimum state dwell (~10s).
