@@ -150,6 +150,23 @@ scrolls, because motion draws the eye when something is wrong.
 4. **Labor:** TJ and Tabitha build everything together. Claude is advisor, coder, and
    all digital deliverables.
 
+## Answered by the syllabus (2026-09-24)
+Full analysis: docs/09_course_requirements.md.
+- **Reports 60%, presentations 20%, demonstrations 20%.** The report is the
+  course. The working rig is 20% of it.
+- **Reports are individual.** Team builds together; each member submits their
+  own, in their own words, from shared data.
+- **Formal group presentation from week 6**; weekly progress updates always.
+- Nine required report sections, ECE Department format. Late: -10 pts/day.
+- The syllabus demands **analytical theories and design calculations** and a
+  **cost analysis**. Neither exists yet - the largest gap in the project.
+- This is **project 1 of 2**; the second must be a different area, Tabitha
+  leading.
+- Instructor stated **verbally** that AI may be used in all aspects (2026-09-24).
+  Reports still carry a short AI-use acknowledgment.
+
 ## Still open
-- Demo date, demo slot length, and whether a written report is required.
-- Whether any graded checkpoints exist. Ask in class; log the answer.
+- Confirm the instructor's week numbering. On ours the presentation is
+  2026-09-30 and the report 2026-10-07.
+- Obtain the ECE Department design reporting format document.
+- Decide project 2.

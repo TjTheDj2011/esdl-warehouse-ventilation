@@ -1,0 +1,98 @@
+ 
+DEPARTMENT OF ELECTRICAL AND COMPUTER ENGINEERING
+COLLEGE OF ENGINEERINGPRIVATE
+COURSE DESCRIPTION FOR EECE-4101
+ELECTRICAL SYSTEMS DESIGN LABORATORY (ESDL)
+(Required for both EE and ECE curriculum)
+SEMESTER: Fall 2026INSTRUCTOR: Dr. Saleh Zein-Sabatto
+CATALOG COURSE DESCRIPTION
+ELECTRICAL SYSTEMS DESIGN LAB (1): Principles and practice of electrical systems design. Projects carried out on a "team basis". Systems and subsystems design goals, specifications, constraints, implementations, presentations, and milestones. Practical implementation of several systems in different areas of Electrical Engineering. Prerequisites: Graduating Senior and Instructor Approval, EECE 3300, 3301, ENGR 3250.
+COURSE PREREQUISITES
+Students should have a grade of 'C' or better in EECE 3300, 3301 and ENGR 3250 and have background in EECE 4000 and/or EECE 3500 etc. The student should be a graduating senior. If you do not meet these prerequisite requirements, you must withdraw from the course. Otherwise, you will automatically receive an "F" grade for the course.
+C. COURSE OBJECTIVES
+To enable students to gain experience in working as members of a design team to design complex electrical and electronic systems and/or subsystems, implement engineering concepts, report, present and demonstrate design projects. Design projects can be selected from a variety of engineering fields such as communication systems, digital systems, robotics, controls, power systems, computer engineering, and software engineering. The program educational objectives addressed in the course are:
+Provide students with experience in the design of complex electrical systems, subsystems and devices.
+Provide students with awareness of the impact of technology on society, professional and ethical responsibilities.
+Provide students with skills to function as a member of a team and communicate effectively.
+COURSE OUTCOMES/COMPETENCIES
+On passing this course, students are expected to have mastered the followings outcomes:
+Ability to identify engineering design problems, provide need analysis, initiate the design process by setting a design goal and objectives; and develop design specifications and constraints from customer needs (SLO-2).
+Ability to evaluate design alternative solutions and approaches based on their social, economic, and societal impacts (SLO-2).
+Develop communication skills by writing technical reports and delivering oral presentations (SLO-3).
+Develop skills to use modern technologies and tools in reports and presentations (SLO-3).
+Understand engineer’s professional and ethical responsibilities (SLO-4).
+Reflect familiarity and use of appropriate codes and standards in engineering disciplines (SLO-4).
+Ability to work in a group of students from different engineering backgrounds and lead a design team (SLO-5).
+Carry out engineering designs and, assemble, test, and evaluate designed systems/subsystems and provide cost analysis (SLO-5).
+DETAILED COURSE OUTLINE
+All students must work in teams. Students can bring their own design project ideas to the class for the instructor approval or select design projects from the suggested list of projects below.
+Suggested Topic Number of Weeks
+-628657112000
+1.Design of control system for robot autonomous navigation (Alphabot)7
+2.Design of servomotor controller using microcontrollers and/or microprocessors7
+3. IEEE SoutheastCon-27 hardware design competition project 2x7
+4.Design of power distribution system for sections of a city7
+5.Design of renewable engineering system for remote communities7
+6.Design of a process control system using LabView hardware/software7
+7.Design of Sensor-based Warehouse Packages Diverter System using PLC 7
+8.Design of a Manufacturing Automation for Material Handling using Robots7
+9. Design of AM/FM Radio Transmitter or Receiver 7
+Students must select two design projects from two different areas. The instructor might approve a design project to cover two periods of seven weeks each (phase-I and phase-II) depending on the complexity and length of the design content of the project.
+GENERAL INFORMATION
+1. Class Attendances, Disability Accommodation and Behavior:
+The Policy on Excessive Absences as printed in the most recent Undergraduate Catalog will be followed. Students are responsible for all material presented, and all assignments and announcements made during class. Students are expected to attend class regularly and to be punctual. Attendance will be taken within the first ten minutes of the class. Students not in class at the time attendance is taken are considered absent as defined in the Undergraduate Student Catalog. Excessive absences will be reported, and students will be barred from further attendance. This instructor has no policy for readmission once a student has been barred from class. The Department of Electrical and Computer Engineering in conjunction with the office of disabled Student Services, makes reasonable accommodations for qualified students with medically documented disabilities. If you need an accommodation, please contact TSU’ Disabled Student Services Office at 963-7400 (phone) or 963-5051 (fax), preferably the 4th class day. Students will be referred to the policy stated in the most recent student’s handbook for all behavior problems that occurred in the classroom. Only students registered for the course, the course instructor, and invited participating guests of the course are permitted in a classroom or laboratory during class sessions. Students should know that children and pets are not allowed in classrooms and/or laboratories.
+2. Class Meetings: The class will be taught in person, W 2:20 -5:20pm.
+3. Textbook (Not required): Engineering Design, G. Dieter & Schmidt, McGraw Hill, 2021. Several other textbooks are available in the library, e.g., “Design for Electrical and Computer Engineers” by R. Ford and C. Coulston, Prentice Hall, Inc. (optional), which can be used as source for the subject of engineering design. Several other technical magazines and journals in the areas of electrical and electronics are available in the ESDL laboratory in the ECE Department which can be used as sources for design project topics. Students are expected to arrange for their individual access to the textbook when needed.
+4. Grading Policy:
+Project Reports60% 90 - 100 A
+Presentations20%80 - 89 B
+PRIVATE Demonstrations20%70 - 79 Ctc \l 1 "Demonstration25%70 - 79C"
+60 - 69 D
+0 - 59 F
+5. Teamwork: The course meanly will meet in person; students are expected to form and work in a team of 2-3 students. Each student is expected to lead the effort in one of the two design projects. The leader of the team is expected to coordinate the meeting between the members of the team, ensure that components are ordered and received and help the team to coordinate the presentation and demonstration of the design project. Teams must be made up of a balanced mix of males and females, when possible, Native Americans, international students and/or recent immigrants. Interdisciplinary teams are highly encouraged, i.e., students with concentration on control systems, power systems, communication systems and computer engineering, etc. The instructor shall approve the teams and re-assign students if a team does not meet the requirements of this objective of diversity.
+6. Weekly Preparation: Students are expected to present the progress of their design project every week. However, one formal presentation is required from the group starting in week six of each project’s period. The presentation is a group presentation, and every member is responsible for part of the presentation. Some of the group will be asked to present their design project in front of an industrial cluster at the end of the semester. Students are required to use computer tools and modern technologies to deliver their presentations.
+7. Reports: Generally, each design project will be completed in six weeks and reports will be due the following week. Reports are individual efforts. Late reports will lose 10 points per day of its grade (unless permission is arranged in advance). Design projects will be performed on a team basis however reports are submitted individually and each of the team members is to prepare a technical report that complies with the following:
+Standard (8 1/2" x 11") with no ragged spiral edges.
+Pages must be stapled together behind the Cover Page.
+Back side of pages blank.
+Each report should contain an abstract, introduction, description of the project, design objective, design requirements, alternative solutions and design procedure, presentation of design testing results, data analysis and conclusion (must follow design reporting format available in the ECE Department).
+Analysis should include all steps, with enough equations and/or terse English to facilitate reading and grading.
+Students are required to use computer tools and modern technologies to deliver their reports.
+Failure to comply with any of the above instructions may affect the grade.
+8. Safe Laboratory Practices: Society depends heavily on engineers for safety, human and industrial progress and national defense. Hence, good safe techniques and clear, honest reporting of results will be a required part of this course. The following are guidelines for this course:
+Techniques - The students will be required to work in an organized manner with the need to understand the experimental procedures, rather than just to follow them by rote. They must be neat in their layout and connection of the equipment used in each experiment, so that they can easily check for accuracy and safety. They should be certain that all members of the experimental team have an opportunity to participate and fully understand the experiment. Deliberate, careful procedures (not shortcuts) should be followed in all aspects of the experiments.
+Safety - Prime attention should be given to Safety by each student - Safety for themselves and for others. For this course, (EECE 4101), the voltages and the rotational motion of equipment used in the experiments should not, themselves, result in a hazard to those in the laboratory. Still, careful attention should be given to safety in order to develop safe practices that will be important in other Laboratory courses and to protect against any accidental exposure to unsafe voltages or other hazards. The following guidelines will apply:
+Be neat in all of your work. Some of the equipment used in the laboratory has high voltages inside of the cabinet. Do not let wires hang loose so that they might accidentally project into the cabinets. Do not operate any equipment with the indication of a flawed cabinet or when it is wet.
+Never use a frayed (or otherwise defective) power cord.
+Never place anything other than a power cord into a power receptacle and use only the 120 volt receptacles.
+Be careful not to let any member of the body (e.g., hands) or any clothing comes in contact with rotating equipment.
+H.CLASS POLICIES AND EXCESSIVE ABSENCES
+The instructor reserves the right to modify the percentage grade distribution if required.
+The evaluation of the written report will be based on the proper usage of grammar, syntax, composition and structure of the report.
+The design project must include analytical theories and design calculations.
+Graphical presentation of the design project will be evaluated as a component of the design project and must be done by computer.
+All class assignments must be submitted on time. Late work generally will not be accepted, except in real emergencies beyond the control of the student. (Severe illness or family emergencies, but not other class assignments). Late work is defined as later than the date and time provided by the instructor for any particular assignment.
+All class assignments must be submitted in class and not in the instructor’s mailbox or under the instructor’s office door.
+All work must reflect the student's or the team's original and own work. Any hint of copying from the internet or sharing information among students will result in given zero grade to the assignments for all involved students.
+Use of AI Tools and Academic Honesty Policy:
+The ECE Department encourages all Electrical and Computer Engineering students to use any modern AI tool for learning purposes. However, the use of any AI tools for solving assignments for grades (such as homework, project, etc.) is not allowed. If a student uses any AI tool in any portion of the assignment/project, then the used AI tool(s) must be properly referenced. All students are to abide by the University’s policy on academic honesty. The work submitted for a grade by students must be generated by the students themselves, working individually or in groups as directed by class assignment instructions. The following are examples of violations of academic honesty: a student has another person/entity to do the work of any substantive portion of an assignment for them. This may include service from a company, hiring a person or company and/or using any AI tools to complete an assignment, project, or exam. If a student is determined to violate academic honesty policy, a grade of zero (0) on the assignment will be given to all involved parties. The University policy states,
+“Plagiarism, cheating, and other forms of academic dishonesty are prohibited. Students guilty of academic misconduct, either directly or indirectly through participation or assistance, are immediately responsible to the instructor of the class. In addition to the other possible disciplinary sanctions which may be imposed through the regular institutional procedures as a result of academic misconduct, the instructor has the authority to assign an “F” or a zero for the exercise or examination, or to assign an “F” in the course. If the student believes that he or she has been erroneously accused of academic misconduct, and if his or her final grade has been lowered as a result, the student may appeal the case through the appropriate institutional procedures (Grade Appeal)”.
+EXCESSIVE ABSENCES
+The Policy on Excessive Absences as printed in the current Undergraduate Catalog will be followed. Students are expected to attend classes regularly. Instructors will keep an accurate record of class attendance and be able to report on official requests, the number of absences of any student in class. At any time from the beginning of classes and instructor may report a student for unsatisfactory attendance. Reporting a student is at the discretion of the individual instructor with the understanding that “excessive” absence is defined as no less than one more than the number of times a class meets per week. Any student reported for excessive absence from class will be barred from further attendance in that class until the student is formally re-admitted by the University.
+CLASSROOM EXPECTATIONS
+You are expected to arrive before the class is scheduled to begin and remain in your seat during the entire class scheduled time. You do not use tobacco products, including smokeless tobacco. Do not bring food or drink (except you may bring bottled water) into the class. Do not abuse the furniture or fixtures in the classroom. If you have a cell phone with you, silence the ringer before coming to class.
+DISABILITY ACCOMMODATION STATEMENT
+TSU is committed to creating inclusive learning environments and providing all students with opportunities to learn and excel in their course of study. Any student with a disability or condition which might interfere with his/her class performance or attendance may arrange for reasonable accommodation by visiting the Office of Disability Services (ODS). ODS is located in Kean Hall, room 131 and can be reached at 963-7400 or www.tnstate.edu/disabilityservices. You will be required to speak with ODS staff and provide documentation of the need for accommodation. If you qualify for accommodation, you will be provided with a document stating what type of classroom accommodation is to be made by the instructor. It is your responsibility to give a copy of this document to the instructor as soon as you receive it. Accommodation will only be provided after the instructor receives the accommodation instructions from ODS; accommodation is not retroactive. You must follow this process for each semester that you require accommodation.
+SEXUAL MISCONDUCT, DOMESTIC/DATING VIOLENCE, STALKING
+TSU recognizes the importance of providing an environment free of all forms of discrimination and sexual harassment, including sexual assault, domestic violence, dating violence, and stalking. If you (or someone you know) has experienced or is experiencing any of these incidents, there are resources to assist you in the areas of accessing health and counseling services, providing academic and housing accommodations, and making referrals for assistance with legal protective orders and more.
+Please be aware that most TSU employees, including faculty and instructors, are “responsible employees”, meaning that they are required to report incidents of sexual violence, domestic/dating violence or stalking. This means that if you tell me about a situation involving sexual harassment, sexual assault, dating violence, domestic violence, or stalking, I must report the information to the Title IX Coordinator. Although I have to report the situation, you will still have options about how your situation will be handled, including whether or not you wish to pursue a formal complaint. Our goal is to make sure you are aware of the range of options available to you and have access to the resources you need.
+You are encouraged to contact TSU’s Title IX Coordinator to report any incidents of sexual harassment, sexual violence, domestic/dating violence or stalking. The Title IX coordinator is located in the Office of Equity and Inclusion, McWherter Administration Building, Ste. 260 and can be reached at 963-7494 or 963-7438. For more information about Title IX and TSU’s SART or policies and procedures regarding sexual, domestic/dating violence and stalking please visit: www.tnstate.edu/equity.
+If you wish to speak to someone confidentially, who is not required to report, you can contact the TSU Counseling Center, located in the basement of Wilson Hall, at 963-5611 or TSU Student Health Services, located in the Floyd Payne Campus Center room 304, at 963-5084. You may also contact the following off campus resources: Sexual Assault Center of Nashville at 1-800-879-1999 or www.sacenter.org or the Tennessee Coalition to End Domestic & Sexual Violence at 615-386-9406 or www.tncoalition.org .
+HARASSMENT & DISCRIMINATION
+Tennessee State University is firmly committed to compliance with all federal, state and local laws that prohibit harassment and discrimination based on race, color, national origin, gender, age, disability, religion, retaliation, veteran status and other protected categories. TSU will not subject any student to discrimination or harassment and no student shall be excluded from participation nor denied the benefits of any educational program based on their protected class. If a student believes they have been discriminated against or harassed because of a protected class, they are encouraged to contact the Office of Equity and Inclusion at McWherter Administration Building, Ste. 260, 615-963-7494 or 963-7438, www.tnstate.edu/equity.
+I.INSTRUCTOR'S INFORMATION
+Name of Instructor:Dr. Saleh Zein-Sabatto
+Office Location:ET-214F
+Office Hours: See the ECE Department for posted office hours.
+Office Telephone:(615) 963-5369
+E-mail:mzein@tnstate.edu

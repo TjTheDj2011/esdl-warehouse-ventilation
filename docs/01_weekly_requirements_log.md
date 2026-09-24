@@ -13,19 +13,34 @@ minor, and especially when it changes something we already built.
 |---|---|---|---|---|
 | 1-2 | — | Conceptual design phase. Settle on a project and a design approach. | Done | TJ + Tabitha |
 | 3 | 2026-09-09 | Design locked. Moving into preliminary design: gather components, begin wiring. | In progress | TJ + Tabitha |
-| 4 | | | | |
-| 5 | | | | |
+| 4 | 2026-09-16 | Continue build. | Done | TJ + Tabitha |
+| 5 | 2026-09-24 | **Verbal: AI tools may be used in all aspects of this project.** Noted because the written syllabus says otherwise; verbal instruction governs in this course. | Recorded | TJ |
+| 5 | 2026-09-24 | Syllabus distributed — see [09_course_requirements.md](09_course_requirements.md) | Done | TJ |
 | 6 | | | | |
 | 7 | | | | |
 
-## Open items awaiting an answer
-- [ ] Syllabus to be added to `docs/` — TJ
-- [ ] Are there graded checkpoints or a formal deliverable list? Worth asking the
-      instructor directly, since nothing is written down.
-- [ ] Is there a final presentation/demo date, and how long is the demo slot?
-- [ ] Is a written report required, and if so what length and format?
+## Open items — ANSWERED 2026-09-24 by the syllabus
 
-## Why the open items matter
-Every one of these changes what we build and in what order. With about four weeks
-left, a surprise deliverable in week 6 is the main schedule risk on this project.
+The syllabus arrived and answered all four. Full analysis:
+[09_course_requirements.md](09_course_requirements.md).
+
+- [x] **Syllabus obtained.** `EECE_4101_Syllabus_Fall_2026.docx`, Dr. Zein-Sabatto.
+- [x] **Graded deliverables exist.** Reports **60%**, presentations 20%,
+      demonstrations 20%. The report is the course; the working rig is 20%.
+- [x] **Formal group presentation starts in week 6**, with weekly progress
+      updates every week regardless.
+- [x] **A written report is required, and it is individual.** Team builds
+      together, but TJ and Tabitha each submit their own. Nine required
+      sections, ECE Department format, 8.5x11 single-sided stapled behind a
+      cover page. **Late loses 10 points per day.**
+
+The schedule risk we were worried about was real and is now concrete: on our
+week numbering the presentation lands **2026-09-30** and reports **2026-10-07**.
+Confirm the numbering in class - it is the one thing everything else depends on.
+
+## Newly open, from reading the syllabus
+- [ ] Confirm the instructor's week numbering matches ours — TJ, ask in class
+- [ ] Obtain the **ECE Department design reporting format** document
+- [ ] Decide **project 2**, which must be in a different area, with Tabitha
+      leading it
 Worth asking in the next class meeting and logging the answers here.
