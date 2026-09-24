@@ -31,6 +31,21 @@ constexpr int PIN_INTAKE_IN2   = 26;  // DRV8833 AIN2
 constexpr int PIN_EXHAUST_IN1  = 27;  // DRV8833 BIN1
 constexpr int PIN_EXHAUST_IN2  = 14;  // DRV8833 BIN2
 constexpr int PIN_DRV_NSLEEP   = 13;  // DRV8833 nSLEEP, HIGH = bridge enabled
+
+// Diagnostics. The DRV8833 reports its own faults on an open-drain pin that
+// pulls LOW on overcurrent, overtemperature or undervoltage - reading it beats
+// guessing. PIN_SENSE measures an output through a 1:1 divider so the firmware
+// can see what the fan actually receives, rather than trusting a meter reading
+// taken with no load.
+constexpr int PIN_DRV_FAULT    = 19;  // to DRV8833 FAULT, internal pull-up
+constexpr int PIN_SENSE        = 32;  // ADC1, via 1:1 divider from an OUT pin
+constexpr float SENSE_DIVIDER  = 2.0f;
+// Is the 1:1 divider physically built? Bare-jumper probing is the normal case
+// on the bench, and then an output driven to VM would put 5 V directly on a
+// 3.3 V ADC pin. False makes the firmware refuse to drive an output high while
+// the probe is attached, and stops it scaling readings by a divider that is
+// not there (which reported 3.3 V as 6.6 V).
+constexpr bool SENSE_HAS_DIVIDER = false;
 constexpr int PIN_BUZZER       = 23;  // buzzer module with onboard transistor
 
 // Measured on the bench 2026-09-23: this 3-pin module sounds when the signal

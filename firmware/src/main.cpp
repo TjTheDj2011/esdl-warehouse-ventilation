@@ -313,6 +313,171 @@ void trace(uint32_t now, bool changed) {
                 changed ? "   <-- STATE CHANGE" : "");
 }
 
+// ---- Hardware diagnostics ---------------------------------------------------
+// Answers "what is the driver actually doing", instead of inferring it from
+// behaviour. FAULT is the chip's own opinion; the ADC reads the output pin
+// through a divider, under real load, which a multimeter cannot do while the
+// fan is connected.
+bool drv_faulted() { return digitalRead(PIN_DRV_FAULT) == LOW; }
+
+float sense_volts() {
+  // 11 dB attenuation gives roughly 0-3.1 V at the pin; the divider halves
+  // whatever the output is doing, so 5 V reads about 2.5 V.
+  uint32_t acc = 0;
+  for (int i = 0; i < 16; ++i) acc += analogRead(PIN_SENSE);
+  const float pin_v = (acc / 16.0f) * 3.3f / 4095.0f;
+  return pin_v * (SENSE_HAS_DIVIDER ? SENSE_DIVIDER : 1.0f);
+}
+
+void run_diagnostics() {
+  Serial.println(F("\n--- driver diagnostics ---"));
+  Serial.printf("DRV8833 FAULT pin : %s\n",
+                drv_faulted() ? "LOW  <-- CHIP IS REPORTING A FAULT"
+                              : "high (no fault reported)");
+  if (digitalRead(PIN_DRV_NSLEEP)) {
+    Serial.println(F("nSLEEP driven     : HIGH (enabled)"));
+  } else {
+    // Loud, not a status line. Every output reads dead while the bridge sleeps,
+    // so a quiet note here is how a disabled driver gets misread as a fault.
+    Serial.println(F("nSLEEP driven     : LOW  <-- DRIVER WAS DISABLED"));
+    Serial.println(F("  All outputs read high-Z in this state, which looks"));
+    Serial.println(F("  identical to a broken output. Re-asserting nSLEEP HIGH"));
+    Serial.println(F("  now; any earlier probe run is void - repeat it."));
+    digitalWrite(PIN_DRV_NSLEEP, HIGH);
+    delay(5);
+  }
+
+  const RunMode saved = run_mode;
+  run_mode = RunMode::MANUAL;
+  struct Step { const char* what; FanDrive d; };
+  // FORWARD drives the output to VM. With no divider fitted that lands 5 V on a
+  // 3.3 V ADC pin, so the step is skipped rather than quietly risking the board.
+  const Step with_div[] = {{"intake OFF ", FanDrive::OFF},
+                           {"intake FWD ", FanDrive::FORWARD},
+                           {"intake OFF ", FanDrive::OFF}};
+  const Step no_div[]   = {{"intake OFF ", FanDrive::OFF},
+                           {"intake OFF ", FanDrive::OFF}};
+  if (!SENSE_HAS_DIVIDER) {
+    Serial.println(F("NOTE: no divider fitted (SENSE_HAS_DIVIDER=false), so the"));
+    Serial.println(F("  FORWARD step is SKIPPED - it would put VM on GPIO 32."));
+    Serial.println(F("  Use 'probe a'/'probe b'; those never drive an output high."));
+  }
+  const Step* steps = SENSE_HAS_DIVIDER ? with_div : no_div;
+  const size_t nsteps = SENSE_HAS_DIVIDER ? 3u : 2u;
+  for (size_t si = 0; si < nsteps; ++si) {
+    const Step& s = steps[si];
+    motor_drive(PIN_INTAKE_IN1, PIN_INTAKE_IN2, s.d);
+    delay(250);
+    Serial.printf("%s -> sense reads %5.2f V   (fault %s)\n", s.what,
+                  sense_volts(), drv_faulted() ? "LOW" : "high");
+  }
+  motor_drive(PIN_INTAKE_IN1, PIN_INTAKE_IN2, FanDrive::OFF);
+  digitalWrite(PIN_DRV_NSLEEP, HIGH);
+  run_mode = saved;
+
+  Serial.println(F("If sense stays near 0 V while the pin is driven FWD, the"));
+  Serial.println(F("output is not reaching the row the divider is in."));
+  Serial.println(F("---------------------------\n"));
+}
+
+// Continuity tester built from the ESP32 itself - no multimeter, no divider.
+//
+// The trick is to never drive the output to 5 V. An H-bridge has two safe
+// states for this: COAST (both inputs low, outputs high-impedance) and BRAKE
+// (both inputs high, both outputs pulled to ground). With PIN_SENSE held by
+// its internal pull-up, a row that is genuinely connected to that output will
+// read HIGH during coast and LOW during brake. A row that is not connected
+// sits HIGH the whole time. The sense pin never sees more than 3.3 V.
+void run_probe(int in1, int in2, const char* label) {
+  pinMode(PIN_SENSE, INPUT_PULLUP);
+  // A sleeping DRV8833 puts every output in high-Z, which reads exactly like a
+  // severed output wire. Asserting nSLEEP here instead of trusting whatever the
+  // previous command left behind is the difference between measuring the board
+  // and measuring our own last mistake.
+  digitalWrite(PIN_DRV_NSLEEP, HIGH);
+  delay(5);
+  Serial.printf("\n--- continuity probe: %s ---\n", label);
+  Serial.printf("driver: nSLEEP=HIGH (asserted for this test), FAULT=%s\n",
+                drv_faulted() ? "LOW <-- CHIP IS FAULTING, result is void" : "high");
+  Serial.println(F("Touch a jumper from GPIO 32 to the row you want to test."));
+  Serial.println(F("CONNECTED rows follow the output. Unconnected rows stay high."));
+
+  int follows = 0, total = 0;
+  for (int cycle = 0; cycle < 6; ++cycle) {
+    // COAST: outputs high-Z, pull-up should win
+    digitalWrite(in1, LOW); digitalWrite(in2, LOW);
+    delay(120);
+    const int coast = digitalRead(PIN_SENSE);
+    // BRAKE: both outputs tied low, a connected row is dragged down
+    digitalWrite(in1, HIGH); digitalWrite(in2, HIGH);
+    delay(120);
+    const int brake = digitalRead(PIN_SENSE);
+
+    ++total;
+    if (coast == HIGH && brake == LOW) ++follows;
+    Serial.printf("  cycle %d: coast=%s brake=%s  %s\n", cycle + 1,
+                  coast ? "HIGH" : "LOW ", brake ? "HIGH" : "LOW ",
+                  (coast == HIGH && brake == LOW) ? "<-- FOLLOWS" : "");
+  }
+  motor_drive(in1, in2, FanDrive::OFF);
+  digitalWrite(PIN_DRV_NSLEEP, HIGH);
+
+  if (follows == total) {
+    Serial.printf("RESULT: CONNECTED to %s. The output reaches this row.\n", label);
+  } else if (follows == 0) {
+    Serial.printf("RESULT: NOT CONNECTED to %s. Nothing reaches this row.\n", label);
+  } else {
+    Serial.printf("RESULT: INTERMITTENT (%d of %d) - bad joint or loose pin.\n",
+                  follows, total);
+  }
+  Serial.println(F("--------------------------------\n"));
+}
+
+// Wire tester. Toggles one ESP32 output and checks whether PIN_SENSE follows
+// it. Touch the sense jumper to the far end of a wire - a driver input pad,
+// say - and this proves whether the signal actually arrives there. Tests the
+// jumper, the breadboard row and the solder joint in one shot, at 3.3 V.
+void run_wire_probe(int drive_pin, const char* label) {
+  // PULLDOWN, not floating. A floating input reads random noise, which is
+  // indistinguishable from a genuinely intermittent joint - the pulldown makes
+  // a disconnected probe read a steady LOW instead, so "not touching" and
+  // "bad connection" no longer look the same.
+  pinMode(PIN_SENSE, INPUT_PULLDOWN);
+  pinMode(drive_pin, OUTPUT);
+  Serial.printf("\n--- wire probe: GPIO %d (%s) ---\n", drive_pin, label);
+  Serial.println(F("Touch the GPIO 32 jumper to the far end of that wire."));
+  if (drive_pin == PIN_DRV_NSLEEP)
+    Serial.println(F("NOTE: this toggles the driver enable; it is re-asserted after."));
+
+  int follows = 0;
+  for (int i = 0; i < 6; ++i) {
+    digitalWrite(drive_pin, HIGH); delay(120);
+    const int hi = digitalRead(PIN_SENSE);
+    digitalWrite(drive_pin, LOW); delay(120);
+    const int lo = digitalRead(PIN_SENSE);
+    if (hi == HIGH && lo == LOW) ++follows;
+    Serial.printf("  cycle %d: drive HIGH -> sense %s | drive LOW -> sense %s  %s\n",
+                  i + 1, hi ? "HIGH" : "LOW ", lo ? "HIGH" : "LOW ",
+                  (hi == HIGH && lo == LOW) ? "<-- FOLLOWS" : "");
+  }
+  // Restore the board to its documented rest state. Toggling nSLEEP used to
+  // strand the driver asleep with no indication, and every probe run after it
+  // then reported a dead output that was really just a disabled bridge - a
+  // fault this tool invented and then blamed on the hardware.
+  digitalWrite(drive_pin, LOW);
+  digitalWrite(PIN_DRV_NSLEEP, HIGH);
+  motor_drive(PIN_INTAKE_IN1, PIN_INTAKE_IN2, FanDrive::OFF);
+  motor_drive(PIN_EXHAUST_IN1, PIN_EXHAUST_IN2, FanDrive::OFF);
+
+  if (follows == 6)
+    Serial.printf("RESULT: WIRE GOOD. GPIO %d reaches the probe point.\n", drive_pin);
+  else if (follows == 0)
+    Serial.printf("RESULT: BROKEN. GPIO %d does NOT reach the probe point.\n", drive_pin);
+  else
+    Serial.printf("RESULT: INTERMITTENT (%d/6) - cold joint or loose pin.\n", follows);
+  Serial.println(F("--------------------------------\n"));
+}
+
 // ---- Bring-up console -------------------------------------------------------
 void print_help() {
   Serial.println(F(
@@ -320,6 +485,9 @@ void print_help() {
       "  help                 this list\n"
       "  status               full state, sensor health, pin map\n"
       "  scan                 I2C bus scan\n"
+      "  diag                 driver fault pin + output voltage sweep\n"
+      "  probe a|b            continuity test an output against GPIO 32\n"
+      "  wire <gpio>          does that GPIO reach the GPIO 32 probe point?\n"
       "  oled                 re-probe and re-attach the three panels\n"
       "  intake on|off|rev    drive the intake fan (on=forward)\n"
       "  exhaust on|off|rev   drive the exhaust fan (on=forward)\n"
@@ -439,6 +607,29 @@ void handle_command(char* line) {
         Serial.println(F("  nothing answered - check SDA/SCL not swapped,"
                          " 3.3 V present, common ground."));
     }
+  } else if (!strcmp(cmd, "diag")) {
+    run_diagnostics();
+  } else if (!strcmp(cmd, "wire")) {
+    const int g = a1 ? atoi(a1) : -1;
+    const RunMode saved = run_mode;
+    run_mode = RunMode::MANUAL;
+    switch (g) {
+      case 25: run_wire_probe(25, "IN1 intake"); break;
+      case 26: run_wire_probe(26, "IN2 intake"); break;
+      case 27: run_wire_probe(27, "IN3 exhaust"); break;
+      case 14: run_wire_probe(14, "IN4 exhaust"); break;
+      case 13: run_wire_probe(13, "nSLEEP"); break;
+      default: Serial.println(F("usage: wire 25|26|27|14|13"));
+    }
+    run_mode = saved;
+  } else if (!strcmp(cmd, "probe")) {
+    const RunMode saved = run_mode;
+    run_mode = RunMode::MANUAL;
+    if (a1 && a1[0] == 'b')
+      run_probe(PIN_EXHAUST_IN1, PIN_EXHAUST_IN2, "OUT3/OUT4 (exhaust)");
+    else
+      run_probe(PIN_INTAKE_IN1, PIN_INTAKE_IN2, "OUT1/OUT2 (intake)");
+    run_mode = saved;
   } else if (!strcmp(cmd, "oled")) {
     oled_attach();
     report_panel("IN", slot_of_in);
@@ -584,6 +775,8 @@ void setup() {
     pinMode(pin, OUTPUT);
     digitalWrite(pin, LOW);
   }
+  pinMode(PIN_DRV_FAULT, INPUT_PULLUP);
+  analogSetPinAttenuation(PIN_SENSE, ADC_11db);
   pinMode(PIN_BUZZER, OUTPUT);
   // Silent level, not simply LOW - on an active-low module LOW is ON, which
   // would have the alarm sounding from the moment it powers up.
