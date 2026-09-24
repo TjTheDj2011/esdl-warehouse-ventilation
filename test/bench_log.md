@@ -294,3 +294,34 @@ CROSS_VENT at 78 F shows the hysteresis is real rather than a bare threshold -
 a `>` comparison would have dropped out at 79.9 F and chattered.
 
 Returned to live sensors cleanly afterwards with no latch carry-over.
+
+### FAULT verified on hardware by pulling a sensor — 2026-09-24
+
+Inside probe's data wire pulled live, then reconnected. Nothing else touched.
+
+```
+[ 5009] STANDBY   in= 74.6F  out= 76.2F  exhaust=off  fail=0
+[16000] FAULT     in= --.-F  out= 76.4F  exhaust=fwd  fail=3   <-- STATE CHANGE
+[26000] STANDBY   in= 75.0F  out= 76.4F  exhaust=off  fail=0   <-- STATE CHANGE
+```
+
+Every clause of the "a missing reading is the dangerous failure" constraint
+held:
+
+| Required behaviour | Observed |
+|---|---|
+| Missing reading never renders as a plausible number | shown as `--.-`, not `0.0` |
+| Takes several bad reads, so one glitch cannot trip it | exactly 3 consecutive |
+| Fails SAFE to exhaust-on, never seals | `exhaust=fwd` |
+| Continuous tone, distinct from the state-change chirp | confirmed by ear |
+| Panel names the failure | `SENSOR` / `FAULT`, stacked, scrolling |
+| Recovers unattended | returned to STANDBY, `fail=0`, no reboot |
+
+The `0.0` case is the one that matters most: a fake-cold reading would have
+parked the controller in STANDBY with the chamber heating and nothing running.
+That is the silent failure the design exists to prevent, and it does not occur.
+
+Scrolling was judged readable on the stacked two-line label, so it stays.
+
+**All five states are now verified on hardware**, four by injection and FAULT by
+physically breaking a sensor.
