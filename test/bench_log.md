@@ -187,3 +187,49 @@ sign of sag, which was the open question about running both channels at once.
 - Third OLED still needs its address pad moved to 0x3D.
 - `nFAULT` cannot be verified by self-test on this module; it only reports a
   real fault.
+
+### Closed loop, first full run on hardware — 2026-09-24
+
+Both DS18B20s live. The outside sensor had been wired to the wrong pin: GPIO 16
+is silkscreened **RX2** on this board, and the jumper was elsewhere. Moving it
+to RX2 brought the sensor up immediately.
+
+Controller cleared `FAULT` on its own once the second sensor read, and stopped
+the exhaust without intervention — the fail-safe releasing itself, not just
+engaging.
+
+**Sensor identity confirmed by hand heat**, which is the check that protects the
+demo from a swapped pair:
+
+| | start | end | delta |
+|---|---|---|---|
+| inside (GPIO 4) | 75.2 F | 87.0 F | **+11.8** |
+| outside (GPIO 16) | 75.2 F | 75.1 F | −0.1 |
+
+Only the sensor labelled INSIDE moved, so the labels match the pins.
+
+**Full hysteresis cycle, uninterrupted:**
+
+| Inside | State | Intake | Exhaust |
+|---|---|---|---|
+| 75.2 F | STANDBY | off | off |
+| **80.8 F** rising | **CROSS_VENT** | **on** | **on** |
+| 87.1 F | CROSS_VENT | on | on |
+| 77.9 F falling | CROSS_VENT (latch holds) | on | on |
+| **76.9 F** falling | **STANDBY** | off | off |
+
+Engaged at 80.8 F and released at 76.9 F, holding through the 77-80 F band
+without chattering. Confirms the mandated 80.0 on / 77.0 off hysteresis against
+real sensor noise rather than in simulation.
+
+CROSS_VENT rather than EXHAUST_ONLY was the correct selection throughout:
+outside sat ~12 F cooler at peak, well past the 2 F differential deadband.
+
+This is the first end-to-end run: real sensors -> FSM -> both fans, driven by a
+real heat source, with no manual commands.
+
+### Still outstanding after this run
+
+OLED panels and buzzer not yet reconnected. `status` misreports the `outputs`
+line during manual override - it prints the control law's desired outputs rather
+than the pins actually being driven. Cosmetic; the telemetry line is correct.
