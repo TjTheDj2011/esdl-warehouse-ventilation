@@ -168,8 +168,11 @@ Full analysis: docs/09_course_requirements.md.
   ordinary practice.
 
 ## Still open
-- Confirm the instructor's week numbering. On ours the presentation is
-  2026-09-30 and the report 2026-10-07.
-- Ask which document is the "ECE Department design reporting format". The
-  ENGR 4500 Capstone Design Manual exists but belongs to a different course.
+- **Week 5 as of 2026-09-24.** Week 6 is 2026-09-30; presentation and report
+  land about two weeks out, ~2026-10-07.
+- Confirm the report format document with the instructor. Working assumption is
+  the College of Engineering's published *Formats for Technical Reports*
+  (docs/10_TSU_FormatsForReports.doc): Courier 10 or TMS 12, double spaced,
+  1.5in top/left margins, and a required **Theory** section. It grades
+  **65/100 on technical content** against 35 on writing and form.
 - Decide project 2.

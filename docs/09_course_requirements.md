@@ -37,15 +37,16 @@ Grade scale: 90–100 A, 80–89 B, 70–79 C, 60–69 D, 0–59 F.
 > will be due the following week."*
 > *"One formal presentation is required from the group starting in week six."*
 
-Working dates, **to be confirmed in class** because the week numbering is ours,
-not the instructor's:
+**Confirmed by TJ 2026-09-24: we are in week 5.** Class meets Wednesdays.
 
 | Week | Date | What is due |
 |---|---|---|
-| 6 | **Wed 2026-09-30** | Formal group presentation + project complete |
-| 7 | **Wed 2026-10-07** | Individual technical reports |
+| 5 | 2026-09-23 | *(current)* Hardware complete and verified |
+| 6 | **Wed 2026-09-30** | Presentations begin per the syllabus — be ready |
+| 7 | **Wed 2026-10-07** | **Formal presentation and report due** |
 
-Weekly progress presentations are expected *every* week regardless.
+So roughly **two weeks** from 2026-09-24. Weekly progress updates are expected
+every week regardless.
 
 **Late reports lose 10 points per day** unless arranged in advance.
 
@@ -63,11 +64,51 @@ The syllabus names the sections. Missing one costs marks directly:
 8. **Data analysis**
 9. Conclusion
 
-Must follow the **ECE Department design reporting format**. We do not have a
-document confirmed to be it. The College of Engineering's Capstone Design
-Manual (ENGR 4500) specifies Courier 10 or TMS 12 and a chapter structure, but
-that belongs to a different course and may not be what EECE 4101 means. **Ask
-the instructor which document applies** rather than assuming.
+### The ECE Department format — found
+
+TSU College of Engineering, *Formats for Technical Reports*, published at
+<https://www.tnstate.edu/engineering/documents/FormatsForReports.doc> and filed
+here as [10_TSU_FormatsForReports.doc](10_TSU_FormatsForReports.doc).
+
+**Section order it requires** (broader than the syllabus list, and it governs):
+
+Cover · Title Page · Table of Contents · List of Figures and List of Tables ·
+Symbols/Nomenclature · Summary · Introduction · **Theory** · Discussion ·
+Results · Conclusions · Bibliography · Appendices
+
+**Mechanical specification, quoted:**
+
+| Item | Requirement |
+|---|---|
+| Paper | 8½ × 11 in |
+| Font | **Courier 10 or TMS 12** |
+| Spacing | **Double-spaced**, except long quotations and abstracts which are single-spaced |
+| Margins | **1½ in top and left**, 1 in bottom and right |
+| Preliminary pages | small Roman numerals, centred at the bottom, fifth line above the edge |
+| Main text | Arabic numerals, centred at the bottom, five spaces from the bottom |
+| Title page | page **i**, not printed |
+
+**How it is graded — 100 points:**
+
+| Area | Points |
+|---|---|
+| Written content — preliminaries, text, reference matter, form and appearance | **35** |
+| **Technical content** — problem identification, theory, assumptions, methodology, computer codes, standards | **65** |
+
+That split is the most useful thing in the document. **Two thirds of the report
+grade is technical content, and "theory" and "assumptions" are named line
+items.** It confirms the calculations gap below is the single highest-value
+thing left to do — a beautifully formatted report with no mathematics is
+capped around a third of the marks.
+
+Note the format demands a **Theory** section outright, which the syllabus's own
+nine-section list does not name. Reconcile by mapping the syllabus content into
+this structure: design objective and requirements sit inside Introduction,
+alternative solutions inside Discussion, data analysis inside Results.
+
+Worth confirming with the instructor that this is the document he means, but it
+is the College of Engineering's own published format and it matches the Courier
+10 / TMS 12 specification quoted elsewhere.
 
 Two further requirements stated separately:
 
