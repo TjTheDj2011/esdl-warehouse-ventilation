@@ -1,7 +1,9 @@
 # Course Requirements — EECE 4101 (ESDL)
 
 **Source:** `EECE_4101_Syllabus_Fall_2026.docx`, Dr. Saleh Zein-Sabatto.
-Added 2026-09-24. This supersedes the guesswork in
+Added 2026-09-24, taken from TJ's `Documents/Fall 26/` copy, which is the
+current one. An earlier download differed in exactly one respect and is not
+authoritative — see section 6. This supersedes the guesswork in
 [01_weekly_requirements_log.md](01_weekly_requirements_log.md) — every open
 question in that file is answered below.
 
@@ -61,8 +63,11 @@ The syllabus names the sections. Missing one costs marks directly:
 8. **Data analysis**
 9. Conclusion
 
-Must follow the **ECE Department design reporting format** — ask for that
-document, we do not have it.
+Must follow the **ECE Department design reporting format**. We do not have a
+document confirmed to be it. The College of Engineering's Capstone Design
+Manual (ENGR 4500) specifies Courier 10 or TMS 12 and a chapter structure, but
+that belongs to a different course and may not be what EECE 4101 means. **Ask
+the instructor which document applies** rather than assuming.
 
 Two further requirements stated separately:
 
@@ -127,20 +132,26 @@ Our project is not on the syllabus's suggested list — the nearest entry is
 "Sensor-based Warehouse Packages Diverter System using PLC" — so it was an
 instructor-approved own idea, which the syllabus explicitly permits.
 
-## 6. AI tools
+## 6. AI tools — no restriction in the current syllabus
 
-The written syllabus says AI may not be used for graded work, **and** that any
-AI tool used must be properly referenced. Those two clauses pull against each
-other.
+Two copies of the syllabus exist and they differ in exactly one place. An
+earlier downloaded copy carried a section titled *"Use of AI Tools and Academic
+Honesty Policy"* which prohibited AI for graded work while simultaneously
+requiring that any AI tool used be referenced.
 
-**The instructor stated verbally that AI may be used in all aspects of this
-project** (recorded 2026-09-24). In this course verbal instruction is the
-operative spec — that is why the weekly log exists.
+**That section is absent from the current copy** in `Documents/Fall 26/`, which
+is the version filed here. Diffed against the older copy, it is the only
+substantive difference — grading weights, schedule, report structure and every
+other requirement are identical.
 
-Recommendation regardless: include a short **AI use acknowledgment** in each
-report naming the tools and what they were used for. The syllabus asks for
-referencing even where use is allowed, it costs a few lines, and it removes any
-later ambiguity. Reports are individual and in your own words either way.
+This matches what the instructor stated verbally on 2026-09-24: **AI may be
+used in all aspects of this project.** Both the current written syllabus and the
+verbal instruction agree, so there is no conflict to manage.
+
+Still worth doing: a short **AI use acknowledgment** in each report naming the
+tools and what they were used for. It is ordinary academic practice, it costs a
+few lines, and it documents the position. Reports are individual and written in
+your own words regardless.
 
 ## 7. Do these next
 

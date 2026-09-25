@@ -162,11 +162,14 @@ Full analysis: docs/09_course_requirements.md.
   **cost analysis**. Neither exists yet - the largest gap in the project.
 - This is **project 1 of 2**; the second must be a different area, Tabitha
   leading.
-- Instructor stated **verbally** that AI may be used in all aspects (2026-09-24).
-  Reports still carry a short AI-use acknowledgment.
+- **AI is unrestricted.** The current syllabus carries no AI policy section (an
+  older downloaded copy did; it is superseded), and the instructor said the same
+  verbally on 2026-09-24. Reports still carry a short AI-use acknowledgment as
+  ordinary practice.
 
 ## Still open
 - Confirm the instructor's week numbering. On ours the presentation is
   2026-09-30 and the report 2026-10-07.
-- Obtain the ECE Department design reporting format document.
+- Ask which document is the "ECE Department design reporting format". The
+  ENGR 4500 Capstone Design Manual exists but belongs to a different course.
 - Decide project 2.
