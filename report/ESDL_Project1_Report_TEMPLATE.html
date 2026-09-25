@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>ESDL Project 1 Report</title>
+<style>
+@page { size: 8.5in 11in; margin-top:1.5in; margin-left:1.5in; margin-right:1in; margin-bottom:1in; }
+body { font-family:"Times New Roman",serif; font-size:12pt; line-height:2.0; }
+h1 { font-size:14pt; font-weight:bold; text-align:center; line-height:1.5; page-break-before:always; }
+h2 { font-size:12pt; font-weight:bold; line-height:1.5; }
+.title-page { text-align:center; page-break-after:always; line-height:1.5; }
+.title-page .t { font-size:16pt; font-weight:bold; margin-top:2in; }
+.single { line-height:1.0; }
+.fill { background:#ffe9a8; font-style:italic; }
+table { border-collapse:collapse; width:100%; font-size:11pt; line-height:1.2; }
+td,th { border:1px solid #444; padding:4px 6px; vertical-align:top; }
+th { background:#e8e8e8; }
+.note { page-break-before:always; font-size:10pt; line-height:1.3; border-left:3px solid #888; padding-left:10px; color:#333; }
+.eq { text-align:center; font-family:"Times New Roman",serif; line-height:1.5; }
+</style></head><body>
+
+<div class="title-page">
+<div class="t">DESIGN AND IMPLEMENTATION OF AN<br/>AUTOMATED WAREHOUSE VENTILATION SYSTEM</div>
+<p style="margin-top:1in;">Electrical Systems Design Laboratory<br/>EECE 4101</p>
+<p>Department of Electrical and Computer Engineering<br/>College of Engineering<br/>Tennessee State University</p>
+<p style="margin-top:0.8in;">Submitted by<br/><span class="fill">[YOUR NAME]</span></p>
+<p>Design team: Terrence Parham and <span class="fill">[Tabitha — surname]</span></p>
+<p style="margin-top:0.8in;">Instructor: Dr. Saleh Zein-Sabatto</p>
+<p><span class="fill">[Date]</span></p>
+</div>
+
+<div class="note"><b>How to use this template.</b> Reports are submitted
+<b>individually</b>. Everything already written here is <i>shared project data</i> —
+measurements, tables, derivations, figures — which both authors may use because
+both produced it. Every <span class="fill">highlighted</span> block is prose you
+write yourself, in your own words. Do not swap prose with your partner.
+<br/><br/>
+Format is already set to department spec: Times New Roman 12, double spaced,
+1.5&nbsp;in top and left margins, 1&nbsp;in bottom and right. Cite in square
+brackets after the last word of the citation [1]. Footnotes are not permitted.
+Delete this box before submitting.</div>
+
+<h1>ABSTRACT</h1>
+<p class="single"><span class="fill">[WRITE — one page, single spaced. State what
+was built, how, the significant result, and why it matters. Write this LAST.
+A guide: name the system and its purpose in one sentence; state the control
+approach in one; give the headline measured result (the system engaged
+cross-ventilation at 80.8 °F and released at 76.9 °F, and all five control
+states were verified on hardware); close with the significance and the honest
+limit.]</span></p>
+
+<h1>TABLE OF CONTENTS</h1>
+<p class="fill">[Generate automatically: References &gt; Table of Contents in Word,
+or Insert &gt; Table of Contents in LibreOffice. Update it last, after the text is
+final and page numbers have settled.]</p>
+
+<h1>LIST OF FIGURES</h1>
+<p class="fill">[Auto-generate from figure captions. Expected figures: system block
+diagram; circuit schematic; wiring diagram; state-transition flowchart; enclosure
+airflow layout; measured cooling curve; measured hysteresis trace. The first five
+already exist as PDFs in docs/.]</p>
+
+<h1>LIST OF TABLES</h1>
+<p class="fill">[Auto-generate. Expected tables: bill of materials with costs;
+state-transition matrix; pin assignment; measured state verification; air-change
+rate by chamber volume; power budget.]</p>
+
+<h1>NOMENCLATURE</h1>
+<table>
+<tr><th>Symbol</th><th>Meaning</th><th>Unit</th></tr>
+<tr><td>V&#775;</td><td>Volumetric airflow</td><td>m&sup3;/s</td></tr>
+<tr><td>m&#775;</td><td>Mass flow rate of air</td><td>kg/s</td></tr>
+<tr><td>V</td><td>Chamber internal volume</td><td>m&sup3;</td></tr>
+<tr><td>&rho;</td><td>Density of air (1.204 at 20 &deg;C)</td><td>kg/m&sup3;</td></tr>
+<tr><td>c<sub>p</sub></td><td>Specific heat of air at constant pressure (1005)</td><td>J/(kg&middot;K)</td></tr>
+<tr><td>Q&#775;</td><td>Rate of heat removal</td><td>W</td></tr>
+<tr><td>Q<sub>s</sub></td><td>Internal heat source power</td><td>W</td></tr>
+<tr><td>&tau;</td><td>Thermal time constant</td><td>s</td></tr>
+<tr><td>T<sub>i</sub>, T<sub>o</sub></td><td>Inside and outside air temperature</td><td>&deg;C</td></tr>
+<tr><td>ACH</td><td>Air changes per hour</td><td>h<sup>&minus;1</sup></td></tr>
+</table>
+
+<h1>I. INTRODUCTION</h1>
+<p><span class="fill">[WRITE — subject, purpose, scope and background. Points to
+cover, in your own words: warehouses accumulate heat from equipment and solar
+gain; conventional exhaust fans run on a timer or a single thermostat and
+therefore ventilate even when outside air is hotter, which adds heat; this
+project builds a closed-loop controller that decides from BOTH inside and outside
+temperature; scope is a scaled prototype in a transparent enclosure, thermal
+control only, humidity deliberately excluded. End the section with one paragraph
+summarising each section that follows — the department format asks for this.]</span></p>
+
+<h1>II. DESCRIPTION OF THE PROJECT</h1>
+<p>The system is a closed-loop thermal ventilation controller built on an
+ESP32-WROOM-32 microcontroller. Two DS18B20 digital temperature probes measure
+chamber and ambient air on separate one-wire buses. A dual-channel DRV8833
+H-bridge drives two 80&nbsp;mm brushless fans arranged for diagonal
+cross-ventilation: intake low on one wall, exhaust high on the opposite wall.
+Three SSD1306 OLED panels display inside temperature, outside temperature and
+system state. An active buzzer signals state transitions and sensor faults.</p>
+<p><span class="fill">[WRITE — expand: the enclosure, how the airflow path is
+arranged and why diagonal, where the sensors sit and why the ambient probe must
+stay clear of the exhaust plume. Reference the block diagram figure here.]</span></p>
+
+<h1>III. DESIGN OBJECTIVE</h1>
+<p>To design and prototype a ventilation system that independently monitors
+internal and external temperature and dynamically drives a dual-fan
+intake/exhaust arrangement with no human intervention.</p>
+<p>The governing principle is to move air only when the air drawn in is cooler
+than the air pushed out, and otherwise to stop moving air. Stated as a
+performance claim: the system drives the chamber toward the lowest temperature
+obtainable by air exchange, and never takes an action that makes the chamber
+hotter.</p>
+<p><span class="fill">[WRITE — list the specific objectives as numbered items
+(O1, O2, ...). Suggested: O1 closed-loop control from two independent sensors;
+O2 fail-safe behaviour on sensor loss; O3 live visualisation of the controlled
+variables and state; O4 physical demonstration of airflow under a heat
+source.]</span></p>
+
+<h1>IV. DESIGN REQUIREMENTS</h1>
+<p>The following specifications and constraints were fixed during design. Each
+is justified analytically in Section&nbsp;V.</p>
+<table>
+<tr><th>Requirement</th><th>Specification</th><th>Rationale</th></tr>
+<tr><td>Threshold hysteresis</td><td>ON at 80.0 &deg;F, OFF at 77.0 &deg;F</td><td>A bare threshold chatters on sensor noise; band exceeds twice the &plusmn;0.90 &deg;F sensor tolerance</td></tr>
+<tr><td>Differential deadband</td><td>Enter at 2.0 &deg;F cooler, exit at 1.0 &deg;F</td><td>Two probes carry &plusmn;1.80 &deg;F of worst-case differential uncertainty</td></tr>
+<tr><td>Minimum state dwell</td><td>10 s</td><td>Four sensor periods; a state cannot change on a single reading</td></tr>
+<tr><td>Sensor fault threshold</td><td>3 consecutive bad reads</td><td>Tolerates one glitch while still responding within 7.5 s</td></tr>
+<tr><td>Failure behaviour</td><td>Explicit FAULT state, audible, exhaust driven</td><td>A missing reading must never render as a plausible value or default silently to idle</td></tr>
+<tr><td>Logic levels</td><td>3.3 V throughout, no level shifter</td><td>Every peripheral selected 3.3 V native; removes the most dangerous wiring error the design allowed</td></tr>
+<tr><td>Motor supply</td><td>Separate 5 V 2 A, common ground</td><td>Sized by fan inrush, not steady draw; prevents brownout of the controller</td></tr>
+<tr><td>Control loop</td><td>Non-blocking, cooperative scheduler, no delay() in loop</td><td>A DS18B20 conversion takes up to 750 ms; the loop must never wait on a sensor</td></tr>
+<tr><td>Control units</td><td>Celsius internally, converted only for display</td><td>Sensor native units; avoids repeated conversion error</td></tr>
+</table>
+
+<h1>V. ALTERNATIVE SOLUTIONS AND DESIGN PROCEDURE</h1>
+<h2>A. Alternatives considered</h2>
+<table>
+<tr><th>Decision</th><th>Alternative rejected</th><th>Basis for the choice</th></tr>
+<tr><td>Brushless computer fans</td><td>130-size brushed motors with propellers</td><td>Brush noise corrupts the I&sup2;C bus, the dominant failure mode of the earlier design; also quieter, better balanced, and simpler to mount</td></tr>
+<tr><td>Three OLED panels</td><td>Single 16&times;2 HD44780 LCD</td><td>The LCD is 5 V and would require a level shifter beside a 3.3 V controller; each measured value also gets a full panel, readable across a room</td></tr>
+<tr><td>SEALED state</td><td>Reversing the intake fan to block backdraft</td><td>Ventilating while outside is hotter adds heat; stopping both fans solves it with no reversing hardware</td></tr>
+<tr><td>Thermal-only control</td><td>Include humidity sensing</td><td>Streamlines the control loop and removes a failure mode with no benefit to the stated objective</td></tr>
+<tr><td>DRV8833 H-bridge</td><td>Two logic-level N-MOSFETs</td><td>Fans switch only on and off so an H-bridge is not required, but the DRV8833 needed no wiring change and its reverse capability assisted bring-up</td></tr>
+</table>
+<p><span class="fill">[WRITE — the syllabus and course outcome SLO-2 require
+alternatives to be evaluated on social, economic and societal impact as well as
+technical merit. Add a paragraph: energy use against always-on ventilation,
+commodity component cost and availability, noise in an occupied space, and
+safety of a low-voltage design.]</span></p>
+
+<h2>B. Control design</h2>
+<p>Control is implemented as a five-state finite state machine evaluated once
+per sensor period.</p>
+<table>
+<tr><th>State</th><th>Entry condition</th><th>Intake</th><th>Exhaust</th><th>Alarm</th></tr>
+<tr><td>STANDBY</td><td>T<sub>in</sub> below 80 &deg;F</td><td>off</td><td>off</td><td>&mdash;</td></tr>
+<tr><td>CROSS_VENT</td><td>T<sub>in</sub> above 80 &deg;F and outside at least 2 &deg;F cooler</td><td>on</td><td>on</td><td>&mdash;</td></tr>
+<tr><td>EXHAUST_ONLY</td><td>T<sub>in</sub> above 80 &deg;F and outside within 3 &deg;F</td><td>off</td><td>on</td><td>chirp on entry</td></tr>
+<tr><td>SEALED</td><td>T<sub>in</sub> above 80 &deg;F and outside at least 3 &deg;F hotter</td><td>off</td><td>off</td><td>chirp on entry</td></tr>
+<tr><td>FAULT</td><td>3 consecutive bad sensor reads</td><td>off</td><td>on</td><td>continuous tone</td></tr>
+</table>
+<p><span class="fill">[WRITE — justify each transition. Why EXHAUST_ONLY rather
+than sealing when temperatures are close; why FAULT drives the exhaust rather
+than stopping (a bounded chamber near ambient beats an unbounded one); why
+SEALED cannot deadlock. Reference the state-transition flowchart figure.]</span></p>
+
+<h2>C. Analytical design calculations</h2>
+<p>Airflow per fan, from the 20 CFM rating:</p>
+<p class="eq">V&#775; = 20 &times; 4.7195&times;10<sup>&minus;4</sup> = 9.439&times;10<sup>&minus;3</sup> m&sup3;/s</p>
+<p>Mass flow and the rate of sensible heat removal:</p>
+<p class="eq">m&#775; = &rho;V&#775; = 1.204 &times; 9.439&times;10<sup>&minus;3</sup> = 1.136&times;10<sup>&minus;2</sup> kg/s</p>
+<p class="eq">Q&#775; = m&#775; c<sub>p</sub> (T<sub>i</sub> &minus; T<sub>o</sub>) = 11.4 &middot; &Delta;T&nbsp;&nbsp;[W]</p>
+<p>The system therefore removes approximately 11.4 W per kelvin of
+inside-to-outside difference, or about 57 W at &Delta;T = 5 K. The same
+expression is negative when outside is hotter: ventilating under that condition
+adds heat at the same rate, which is the analytical basis for the SEALED state.</p>
+<p>An energy balance on a well-mixed chamber with an internal source gives</p>
+<p class="eq">V&rho;c<sub>p</sub> (dT<sub>i</sub>/dt) = m&#775;c<sub>p</sub>(T<sub>o</sub> &minus; T<sub>i</sub>) + Q<sub>s</sub></p>
+<p>from which the steady state is</p>
+<p class="eq">T<sub>i,ss</sub> = T<sub>o</sub> + Q<sub>s</sub> / (m&#775;c<sub>p</sub>)</p>
+<p>With no internal source the chamber settles at ambient exactly. The system
+contains no refrigeration and therefore cannot cool below ambient; with a
+source it settles approximately 1 K above ambient per 11.4 W. Increasing
+airflow reduces that elevation but cannot make it negative.</p>
+<p>The homogeneous solution is first order with</p>
+<p class="eq">T<sub>i</sub>(t) = T<sub>o</sub> + (T<sub>i,0</sub> &minus; T<sub>o</sub>)e<sup>&minus;t/&tau;</sup>,&nbsp;&nbsp;&tau; = V / V&#775;</p>
+<p>Mass and specific heat cancel, so the thermal time constant is simply the
+chamber volume divided by the volumetric flow rate &mdash; one air-change time.</p>
+<table>
+<tr><th>Chamber volume</th><th>V (m&sup3;)</th><th>&tau; free-air (s)</th><th>ACH</th><th>&tau; at 60% derate (s)</th><th>ACH</th></tr>
+<tr><td>12 gal</td><td>0.0454</td><td>4.8</td><td>748</td><td>8.0</td><td>449</td></tr>
+<tr><td>18 gal</td><td>0.0681</td><td>7.2</td><td>499</td><td>12.0</td><td>299</td></tr>
+<tr><td>27 gal</td><td>0.1022</td><td>10.8</td><td>332</td><td>18.0</td><td>199</td></tr>
+<tr><td>32 gal</td><td>0.1211</td><td>12.8</td><td>281</td><td>21.4</td><td>168</td></tr>
+</table>
+<p class="fill">[REPLACE this table with the single row for the measured chamber
+volume once the enclosure is built.]</p>
+<h2>D. Derivation of the control thresholds</h2>
+<p>The DS18B20 is specified to &plusmn;0.5 &deg;C, i.e. &plusmn;0.90 &deg;F.
+Quantisation at 12-bit resolution is 0.0625 &deg;C, an order of magnitude
+smaller, so tolerance dominates. To prevent re-triggering on noise the
+hysteresis band must exceed the peak-to-peak uncertainty of one sensor:</p>
+<p class="eq">band &gt; 2 &times; 0.90 = 1.80 &deg;F&nbsp;&nbsp;&rarr;&nbsp;&nbsp;80.0/77.0 &deg;F gives 3.00 &deg;F, a margin of 1.67</p>
+<p>The differential comparison involves both probes. Worst case the tolerances
+add to &plusmn;1.80 &deg;F; treated as independent the root-sum-square figure is
+&plusmn;1.27 &deg;F. The worst case was adopted because both probes are the same
+part from the same batch and their errors may be correlated rather than
+cancelling. The 2.0 &deg;F entry deadband therefore clears the worst-case
+uncertainty, and exit at 1.0 &deg;F provides differential hysteresis.</p>
+<h2>E. Power budget</h2>
+<table>
+<tr><th>Load</th><th>Current</th><th>Rail</th><th>Power</th></tr>
+<tr><td>2 &times; 80 mm fan, steady</td><td>200 mA</td><td>5 V</td><td>1.00 W</td></tr>
+<tr><td>ESP32-WROOM-32, radio unused</td><td>80 mA</td><td>3.3 V</td><td>0.26 W</td></tr>
+<tr><td>3 &times; SSD1306 OLED</td><td>60 mA</td><td>3.3 V</td><td>0.20 W</td></tr>
+<tr><td>2 &times; DS18B20</td><td>3 mA</td><td>3.3 V</td><td>0.01 W</td></tr>
+<tr><td>Buzzer module</td><td>30 mA</td><td>3.3 V</td><td>0.10 W</td></tr>
+<tr><td>DRV8833 quiescent</td><td>2 mA</td><td>5 V</td><td>0.01 W</td></tr>
+<tr><td><b>Total steady</b></td><td></td><td></td><td><b>1.58 W</b></td></tr>
+</table>
+<p>The supply is sized by inrush rather than steady draw. A brushless fan draws
+roughly three times its rated current while the rotor accelerates, and both fans
+start together on entry to CROSS_VENT, giving a worst case of approximately
+0.6&nbsp;A. The 5&nbsp;V 2&nbsp;A supply provides 3.3&times; headroom on that
+transient.</p>
+
+<h1>VI. PRESENTATION OF DESIGN TESTING RESULTS</h1>
+<h2>A. Verification of all control states</h2>
+<p>Each state was driven on assembled hardware and the commanded outputs
+recorded from the controller trace.</p>
+<table>
+<tr><th>Inside / outside (&deg;F)</th><th>State reached</th><th>Intake</th><th>Exhaust</th><th>Matches design</th></tr>
+<tr><td>72 / 65</td><td>STANDBY</td><td>off</td><td>off</td><td>yes</td></tr>
+<tr><td>85 / 65</td><td>CROSS_VENT</td><td>on</td><td>on</td><td>yes</td></tr>
+<tr><td>85 / 84</td><td>EXHAUST_ONLY</td><td>off</td><td>on</td><td>yes</td></tr>
+<tr><td>85 / 95</td><td>SEALED</td><td>off</td><td>off</td><td>yes</td></tr>
+<tr><td>85 / 65 (returning)</td><td>CROSS_VENT</td><td>on</td><td>on</td><td>yes &mdash; seal released unaided</td></tr>
+<tr><td>78 / 65</td><td>CROSS_VENT</td><td>on</td><td>on</td><td>yes &mdash; hysteresis holds</td></tr>
+<tr><td>74 / 65</td><td>STANDBY</td><td>off</td><td>off</td><td>yes</td></tr>
+</table>
+<h2>B. Closed-loop response to a real heat source</h2>
+<p>With both probes live and no injected values, the chamber probe was warmed by
+hand and released.</p>
+<table>
+<tr><th>Inside temperature</th><th>State</th><th>Fans</th></tr>
+<tr><td>75.2 &deg;F</td><td>STANDBY</td><td>off</td></tr>
+<tr><td>80.8 &deg;F rising</td><td>CROSS_VENT</td><td>both on</td></tr>
+<tr><td>87.1 &deg;F</td><td>CROSS_VENT</td><td>both on</td></tr>
+<tr><td>77.9 &deg;F falling</td><td>CROSS_VENT</td><td>both on (latch holds)</td></tr>
+<tr><td>76.9 &deg;F falling</td><td>STANDBY</td><td>off</td></tr>
+</table>
+<p>Engagement at 80.8 &deg;F and release at 76.9 &deg;F confirm the designed
+hysteresis operating against real sensor noise. The outside probe moved
+&minus;0.1 &deg;F over the same interval while the inside probe moved
++11.8 &deg;F, confirming that the two channels are independent and correctly
+assigned.</p>
+<h2>C. Fault behaviour</h2>
+<p>The chamber probe's data line was disconnected during operation and
+reconnected.</p>
+<table>
+<tr><th>Required behaviour</th><th>Observed</th></tr>
+<tr><td>A missing reading never renders as a plausible value</td><td>displayed as &ldquo;--.-&rdquo;, not 0.0</td></tr>
+<tr><td>Several bad reads required, so one glitch cannot trip it</td><td>exactly 3 consecutive</td></tr>
+<tr><td>Fails safe to exhaust driven, never sealed</td><td>exhaust driven</td></tr>
+<tr><td>Audible and distinguishable from a state change</td><td>continuous tone</td></tr>
+<tr><td>Recovers without intervention</td><td>returned to STANDBY, counter reset</td></tr>
+</table>
+<p><span class="fill">[WRITE — a short paragraph introducing these three tests and
+what each was intended to establish. Reference the measured traces as
+figures.]</span></p>
+
+<h1>VII. DATA ANALYSIS</h1>
+<p class="fill">[This section requires the enclosure and the heat-source runs. Do
+not write it until the data exists.]</p>
+<p><span class="fill">[WRITE — procedure: heat the chamber to a steady elevated
+temperature, cut the source, allow the controller to ventilate, and log inside
+temperature against time.]</span></p>
+<p>Fitting the logged curve to the first-order model, a plot of</p>
+<p class="eq">ln[ (T<sub>i</sub>(t) &minus; T<sub>o</sub>) / (T<sub>i,0</sub> &minus; T<sub>o</sub>) ] versus t</p>
+<p>is a straight line of slope &minus;1/&tau;, giving the measured time constant.
+The ratio of the measured value to the predicted V/V&#775; is the installed flow
+derate, so a single experiment yields both the thermal response and the
+effective airflow.</p>
+<table>
+<tr><th>Quantity</th><th>Predicted</th><th>Measured</th><th>Ratio</th></tr>
+<tr><td>Time constant &tau; (s)</td><td class="fill">[V/V&#775;]</td><td class="fill">[from fit]</td><td class="fill">[ ]</td></tr>
+<tr><td>Air changes per hour</td><td class="fill">[3600/&tau;]</td><td class="fill">[ ]</td><td class="fill">[ ]</td></tr>
+<tr><td>Steady-state elevation above ambient (K)</td><td class="fill">[Q<sub>s</sub>/m&#775;c<sub>p</sub>]</td><td class="fill">[ ]</td><td class="fill">[ ]</td></tr>
+</table>
+<p><span class="fill">[WRITE — interpret. Does the measured derate agree with the
+50&ndash;70% expected for an installed fan? Which assumption in Section V
+dominates the discrepancy? Compare the sealed case against the ventilated case
+over the same interval to quantify what the control law actually achieves.]</span></p>
+
+<h1>VIII. COST ANALYSIS</h1>
+<p class="fill">[Required by course outcome SLO-5. Complete the unit prices from
+the purchase records.]</p>
+<table>
+<tr><th>Item</th><th>Qty</th><th>Unit cost</th><th>Extended</th></tr>
+<tr><td>ESP32-WROOM-32 development board</td><td>1</td><td class="fill">[ ]</td><td class="fill">[ ]</td></tr>
+<tr><td>DS18B20 temperature probe module</td><td>2</td><td class="fill">[ ]</td><td class="fill">[ ]</td></tr>
+<tr><td>SSD1306 128&times;64 OLED panel</td><td>3</td><td class="fill">[ ]</td><td class="fill">[ ]</td></tr>
+<tr><td>DRV8833 dual motor driver</td><td>1</td><td class="fill">[ ]</td><td class="fill">[ ]</td></tr>
+<tr><td>80 mm 5 V brushless fan</td><td>2</td><td class="fill">[ ]</td><td class="fill">[ ]</td></tr>
+<tr><td>Active buzzer module</td><td>1</td><td class="fill">[ ]</td><td class="fill">[ ]</td></tr>
+<tr><td>5 V 2 A power supply</td><td>1</td><td class="fill">[ ]</td><td class="fill">[ ]</td></tr>
+<tr><td>Transparent enclosure, fasteners, weatherstrip</td><td>1</td><td class="fill">[ ]</td><td class="fill">[ ]</td></tr>
+<tr><td>Breadboards, jumper wire, consumables</td><td>&mdash;</td><td class="fill">[ ]</td><td class="fill">[ ]</td></tr>
+<tr><td><b>Total</b></td><td></td><td></td><td class="fill">[ ]</td></tr>
+</table>
+<p><span class="fill">[WRITE — comment on cost relative to function: the
+controller and sensing account for a small fraction of the total, and the
+design deliberately avoids parts that would raise cost without improving the
+result. Note that scaling to a real warehouse changes the fan and supply
+selection but not the control law.]</span></p>
+
+<h1>IX. CONCLUSION</h1>
+<p><span class="fill">[WRITE — a precise statement of results answering each
+objective from Section III in turn. Cover: the controller operates closed-loop
+from two independent sensors with no human input; all five states were verified
+on assembled hardware; the hysteresis was confirmed against real sensor noise;
+the fault path was verified by physically disconnecting a sensor and recovered
+unaided. State the physical limit honestly &mdash; no refrigeration, so ambient
+is the floor &mdash; and give recommendations for a next revision.]</span></p>
+
+<h1>REFERENCES</h1>
+<p class="single">[1] <span class="fill">Analog Devices/Maxim, &ldquo;DS18B20
+Programmable Resolution 1-Wire Digital Thermometer,&rdquo; datasheet.</span><br/>
+[2] <span class="fill">Texas Instruments, &ldquo;DRV8833 Dual H-Bridge Motor
+Driver,&rdquo; datasheet.</span><br/>
+[3] <span class="fill">Solomon Systech, &ldquo;SSD1306 128&times;64 Dot Matrix OLED
+Driver,&rdquo; datasheet.</span><br/>
+[4] <span class="fill">Espressif Systems, &ldquo;ESP32-WROOM-32 Datasheet.&rdquo;</span><br/>
+[5] <span class="fill">Add any text or standard cited for the thermodynamics.</span></p>
+
+<h1>APPENDICES</h1>
+<p><b>Appendix A.</b> Controller firmware source listing.<br/>
+<b>Appendix B.</b> Automated test suite and results.<br/>
+<b>Appendix C.</b> Sample calculations.<br/>
+<b>Appendix D.</b> Pin assignment and wiring schedule.</p>
+<p class="fill">[Paste from firmware/src/, test/, docs/ and hardware/01_pinout.md.]</p>
+
+</body></html>
