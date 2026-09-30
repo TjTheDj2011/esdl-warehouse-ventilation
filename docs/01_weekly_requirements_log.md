@@ -16,6 +16,8 @@ minor, and especially when it changes something we already built.
 | 4 | 2026-09-16 | Continue build. | Done | TJ + Tabitha |
 | 5 | 2026-09-24 | **Verbal: AI tools may be used in all aspects of this project.** Noted because the written syllabus says otherwise; verbal instruction governs in this course. | Recorded | TJ |
 | 5 | 2026-09-24 | Syllabus distributed — see [09_course_requirements.md](09_course_requirements.md) | Done | TJ |
+| 6 | 2026-09-30 | **Presentation (team):** .pptx, 10–12 min, **no more than 10–12 slides**, same content as the report. Title slide with name, project title, school, course. **Project outline slide** (serves as the agenda). **Smallest text 18 pt, in bold.** Don't crowd. **Don't be fancy or cute. Show all work.** Questions and feedback at the end. | In progress | TJ + Tabitha |
+| 6 | 2026-09-30 | **Report (individual):** content like a capstone report covering the entire design process — problem, need, goal, objectives, requirements, specifications, restrictions, background, **theory**, abstract, references. **No chapter numbering** (no Ch. 1, 2, 3). Must include **schematics, flowchart, and a picture of the design.** Plus a demo. | In progress | each |
 | 6 | | | | |
 | 7 | | | | |
 

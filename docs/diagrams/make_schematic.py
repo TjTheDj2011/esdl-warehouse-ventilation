@@ -19,7 +19,7 @@ NETC = "#8b1a1a"
 PWRC = "#1d6b1d"
 LW = 1.35
 STUB = 7.0
-REV, DATE = "A", "2026-09-16"
+REV, DATE = "B", "2026-09-30"
 
 
 def page(w=230, h=122):
@@ -154,72 +154,90 @@ def title_block(ax, w, sheet, total, subtitle):
             va="center", fontsize=7.6, zorder=7)
 
 
+# ------------------------------------------------------------------ helpers
+def netlbl(ax, x, y, text, side="right", length=6.0):
+    """Short wire ending in a net name. Wires carrying the same name connect."""
+    d = 1 if side == "right" else -1
+    wire(ax, [(x, y), (x + d * length, y)])
+    ax.text(x + d * (length + 1.2), y, text, ha="left" if d > 0 else "right",
+            va="center", fontsize=8.0, color=NETC, fontweight="bold", zorder=5)
+
+
+def dc_source(ax, cx, cy, r, ref, name):
+    ax.add_patch(Circle((cx, cy), r, fc=FILL, ec=BLK, lw=1.7, zorder=3))
+    ax.text(cx, cy + r * 0.45, "+", ha="center", va="center", fontsize=12,
+            fontweight="bold", zorder=5)
+    ax.text(cx, cy - r * 0.45, "−", ha="center", va="center", fontsize=12,
+            fontweight="bold", zorder=5)
+    ax.text(cx - r - 3.5, cy, f"{ref}\n{name}", ha="right", va="center",
+            fontsize=8.3, zorder=5, linespacing=1.5)
+
+
 # ------------------------------------------------------------------ sheet 1
 def sheet1(pdf):
-    W, H = 242, 132
+    W, H = 262, 134
     fig, ax = page(W, H)
     ax.text(4, H - 3, "SHEET 1 - CONTROLLER, SENSORS, DISPLAY", fontsize=12,
             fontweight="bold", va="top")
 
-    esp = ic(ax, 78, 30, 118, 120, "U1", "ESP32-WROOM-32\n3.3 V logic",
-             left=[("3V3", 114), ("5V", 107), ("GND", 100),
-                   ("GPIO4", 86), ("GPIO16", 79)],
-             right=[("GPIO21", 114), ("GPIO22", 107), ("GPIO23", 93),
-                    ("GPIO25", 62), ("GPIO26", 56), ("GPIO27", 50),
-                    ("GPIO14", 44), ("GPIO13", 38)])
+    esp = ic(ax, 84, 26, 124, 124, "U1", "ESP32-WROOM-32\n3.3 V logic",
+             left=[("3V3", 118), ("GND", 111), ("GPIO4", 96), ("GPIO16", 88)],
+             right=[("GPIO21", 118), ("GPIO22", 112), ("GPIO17", 104),
+                    ("GPIO18", 98), ("GPIO23", 88), ("GPIO25", 66),
+                    ("GPIO26", 60), ("GPIO27", 54), ("GPIO14", 48),
+                    ("GPIO13", 42), ("GPIO19", 36)])
+    pwr_tag(ax, esp["3V3"][0], 118, "+3.3 V")
+    gnd(ax, esp["GND"][0], 111, down=4.0)
 
-    pwr_tag(ax, esp["3V3"][0], 114, "+3.3 V")
-    pwr_tag(ax, esp["5V"][0], 107, "+5 V")
-    gnd(ax, esp["GND"][0], 100, down=4.0)
-
-    d1 = ic(ax, 12, 74, 50, 98, "U2", "DHT22 #1\nCHAMBER",
-            left=[("VCC", 92), ("GND", 80)], right=[("DATA", 86)])
-    d2 = ic(ax, 12, 38, 50, 62, "U3", "DHT22 #2\nAMBIENT",
-            left=[("VCC", 56), ("GND", 44)], right=[("DATA", 50)])
-    for dd in (d1, d2):
+    # Temperature probes. Each breakout carries its own 4.7k pull-up on DQ.
+    s1 = ic(ax, 26, 88, 62, 108, "U2", "DS18B20 #1\nCHAMBER",
+            left=[("VCC", 104), ("GND", 92)], right=[("DQ", 98)])
+    s2 = ic(ax, 26, 58, 62, 78, "U3", "DS18B20 #2\nAMBIENT",
+            left=[("VCC", 74), ("GND", 62)], right=[("DQ", 68)])
+    for dd in (s1, s2):
         pwr_tag(ax, dd["VCC"][0], dd["VCC"][1], "+3.3 V")
         gnd(ax, dd["GND"][0], dd["GND"][1], down=4.0)
-    wire(ax, [d1["DATA"], esp["GPIO4"]])
-    wire(ax, [d2["DATA"], (64, 50), (64, 79), esp["GPIO16"]])
+    wire(ax, [s1["DQ"], (72, 98), (72, 96), esp["GPIO4"]])
+    wire(ax, [s2["DQ"], (74, 68), (74, 88), esp["GPIO16"]])
 
-    lv = ic(ax, 140, 96, 174, 122, "U4", "BSS138\nLEVEL SHIFT",
-            left=[("LV1", 114), ("LV2", 107), ("LV", 100)],
-            right=[("HV1", 114), ("HV2", 107), ("HV", 100)])
-    lcd = ic(ax, 194, 88, 230, 122, "U5", "16x2 LCD\nHD44780 + PCF8574",
-             left=[("SDA", 114), ("SCL", 107), ("VCC", 100), ("GND", 93)])
-    wire(ax, [esp["GPIO21"], lv["LV1"]])
-    wire(ax, [esp["GPIO22"], lv["LV2"]])
-    wire(ax, [lv["HV1"], lcd["SDA"]])
-    wire(ax, [lv["HV2"], lcd["SCL"]])
-    wire(ax, [lv["HV"], lcd["VCC"]])
-    junction(ax, 186, 100)
-    # Net label rather than a flag: no room between the SCL and VCC pins, and
-    # naming the net is standard practice anyway.
-    ax.text(186, 102.2, "+5 V", ha="center", va="bottom", fontsize=7.9,
-            color=PWRC, fontweight="bold", zorder=5)
-    pwr_tag(ax, lv["LV"][0], 100, "+3.3 V")
-    gnd(ax, lcd["GND"][0], 93, down=4.0)
-    ax.text(129, 124, "3.3 V logic side", ha="center", fontsize=7.8, color=PWRC,
-            style="italic")
-    ax.text(186, 126, "5 V side", ha="center", fontsize=7.8, color="#b8860b",
-            style="italic")
+    # Two hardware I2C buses. Named nets connect to the panels on the right.
+    netlbl(ax, *esp["GPIO21"], "SDA0")
+    netlbl(ax, *esp["GPIO22"], "SCL0")
+    netlbl(ax, *esp["GPIO17"], "SDA1")
+    netlbl(ax, *esp["GPIO18"], "SCL1")
 
-    bz = ic(ax, 140, 68, 180, 88, "LS1", "BUZZER MODULE\nonboard NPN",
-            left=[("IN", 82), ("VCC", 74)])
-    wire(ax, [esp["GPIO23"], (131, 93), (131, 82), bz["IN"]])
-    pwr_tag(ax, bz["VCC"][0], 74, "+3.3 V")
-    gnd(ax, 160, 68, down=4.0)
+    bz = ic(ax, 152, 74, 188, 94, "LS1", "BUZZER MODULE\nactive LOW",
+            left=[("IN", 88), ("VCC", 80)])
+    wire(ax, [esp["GPIO23"], bz["IN"]])
+    pwr_tag(ax, bz["VCC"][0], 80, "+3.3 V")
+    gnd(ax, 170, 74, down=4.0)
 
     for pn, label in (("GPIO25", "AIN1"), ("GPIO26", "AIN2"),
                       ("GPIO27", "BIN1"), ("GPIO14", "BIN2"),
-                      ("GPIO13", "nSLEEP")):
+                      ("GPIO13", "nSLEEP"), ("GPIO19", "nFAULT")):
         x, y = esp[pn]
-        wire(ax, [(x, y), (x + 10, y)], color=NETC)
-        net(ax, x + 10, y, f"{label}   > SH 2", to_right=True, w=44)
+        wire(ax, [(x, y), (x + 6, y)], color=NETC)
+        net(ax, x + 6, y, f"{label}   > SH 2", to_right=True, w=46)
 
-    ax.text(4, 10, "All grounds common.  DHT22 data lines are 3.3 V logic and "
-                   "connect directly to the MCU.\nThe LCD is the only 5 V device: "
-                   "its I2C lines MUST pass through U4.\nThe +5 V net originates at the ESP32 5 V pin (USB-derived).",
+    # Three SSD1306 panels: one on bus 0, two sharing bus 1 at 0x3C and 0x3D.
+    panels = (("U4", "SSD1306 OLED\nbus 0  ·  0x3C", 102, "SDA0", "SCL0"),
+              ("U5", "SSD1306 OLED\nbus 1  ·  0x3C", 70, "SDA1", "SCL1"),
+              ("U6", "SSD1306 OLED\nbus 1  ·  0x3D", 38, "SDA1", "SCL1"))
+    for ref, name, y0, sda, scl in panels:
+        u = ic(ax, 214, y0, 254, y0 + 24, ref, name,
+               left=[("SDA", y0 + 20), ("SCL", y0 + 14), ("VCC", y0 + 8),
+                     ("GND", y0 + 2)])
+        netlbl(ax, *u["SDA"], sda, side="left")
+        netlbl(ax, *u["SCL"], scl, side="left")
+        pwr_tag(ax, u["VCC"][0], u["VCC"][1], "+3.3 V")
+        gnd(ax, u["GND"][0], u["GND"][1], down=3.0)
+
+    ax.text(4, 10,
+            "All grounds common.  Every device is 3.3 V native, so there is no level "
+            "shifter anywhere.  Nets with the same name are connected.\n"
+            "Each DS18B20 breakout carries its own 4.7 kΩ pull-up on DQ.  "
+            "OLED roles IN / OUT / STATE are assigned by the firmware at boot.\n"
+            "The buzzer module sounds when its input is pulled LOW.",
             fontsize=8.2, va="bottom", color="#44444e", linespacing=1.7)
     title_block(ax, W, 1, 2, "Controller, Sensors, Display")
     pdf.savefig(fig, bbox_inches="tight")
@@ -228,55 +246,62 @@ def sheet1(pdf):
 
 # ------------------------------------------------------------------ sheet 2
 def sheet2(pdf):
-    W, H = 242, 132
+    W, H = 262, 134
     fig, ax = page(W, H)
-    ax.text(4, H - 3, "SHEET 2 - MOTOR DRIVE AND POWER", fontsize=12,
+    ax.text(4, H - 3, "SHEET 2 - FAN DRIVE AND POWER", fontsize=12,
             fontweight="bold", va="top")
 
-    drv = ic(ax, 80, 34, 126, 110, "U6", "DRV8833\nDUAL H-BRIDGE",
-             left=[("AIN1", 102), ("AIN2", 95), ("BIN1", 88), ("BIN2", 81),
-                   ("nSLEEP", 74), ("VM", 50), ("GND", 43)],
-             right=[("AOUT1", 102), ("AOUT2", 95), ("BOUT1", 81), ("BOUT2", 74)])
+    drv = ic(ax, 96, 30, 142, 114, "U7", "DRV8833\nDUAL H-BRIDGE",
+             left=[("AIN1", 106), ("AIN2", 99), ("BIN1", 92), ("BIN2", 85),
+                   ("nSLEEP", 78), ("nFAULT", 71), ("VM", 50), ("GND", 42)],
+             right=[("AOUT1", 106), ("AOUT2", 99), ("BOUT1", 85),
+                    ("BOUT2", 78)])
 
-    for pn, label in (("AIN1", "AIN1"), ("AIN2", "AIN2"), ("BIN1", "BIN1"),
-                      ("BIN2", "BIN2"), ("nSLEEP", "nSLEEP")):
+    for pn in ("AIN1", "AIN2", "BIN1", "BIN2", "nSLEEP", "nFAULT"):
         x, y = drv[pn]
         wire(ax, [(x - 10, y), (x, y)], color=NETC)
-        net(ax, x - 54, y, f"SH 1 >   {label}", to_right=False, w=44)
+        net(ax, x - 56, y, f"SH 1 >   {pn}", to_right=False, w=46)
 
-    wire(ax, [drv["AOUT1"], (168, 102)])
-    wire(ax, [drv["AOUT2"], (168, 95)])
-    cap_v(ax, 150, 102, 95, "C1", "0.1 uF")
-    motor(ax, 177, 98.5, 9.0, "M1", "INTAKE FAN\n80mm fan 5V")
+    wire(ax, [drv["AOUT1"], (172, 106)])
+    wire(ax, [drv["AOUT2"], (172, 99)])
+    ax.text(160, 108.2, "red (+)", ha="center", fontsize=7.6, color="#44444e")
+    ax.text(160, 101.2, "black", ha="center", fontsize=7.6, color="#44444e")
+    motor(ax, 181, 102.5, 9.0, "M1", "INTAKE FAN\n80 mm brushless, 5 V")
 
-    wire(ax, [drv["BOUT1"], (168, 81)])
-    wire(ax, [drv["BOUT2"], (168, 74)])
-    cap_v(ax, 150, 81, 74, "C2", "0.1 uF")
-    motor(ax, 177, 77.5, 9.0, "M2", "EXHAUST FAN\n80mm fan 5V")
+    wire(ax, [drv["BOUT1"], (172, 85)])
+    wire(ax, [drv["BOUT2"], (172, 78)])
+    ax.text(160, 87.2, "red (+)", ha="center", fontsize=7.6, color="#44444e")
+    ax.text(160, 80.2, "black", ha="center", fontsize=7.6, color="#44444e")
+    motor(ax, 181, 81.5, 9.0, "M2", "EXHAUST FAN\n80 mm brushless, 5 V")
 
-    wire(ax, [drv["VM"], (44, 50)])
-    battery(ax, 44, 50, 24, "BT1", "4xAA  6 V\nMOTORS ONLY")
-    gnd(ax, 44, 24, down=4.0)
-    wire(ax, [drv["GND"], (62, 43), (62, 30), (44, 30)])
-    junction(ax, 44, 30)
+    # Fan supply. Separate from the ESP32, which runs from USB.
+    dc_source(ax, 50, 46, 7.0, "PS1", "5 V 2 A\nwall supply\nFANS ONLY")
+    wire(ax, [(50, 53), (50, 58), (84, 58), (84, 50), drv["VM"]])
+    wire(ax, [(50, 39), (50, 30)])
+    wire(ax, [drv["GND"], (84, 42), (84, 30), (50, 30)])
+    junction(ax, 50, 30)
+    gnd(ax, 50, 30, down=4.0)
+    ax.text(58, 23.5, "to ESP32 GND (sheet 1)", ha="left", fontsize=7.8,
+            color="#44444e", style="italic")
 
-    ax.add_patch(Rectangle((150, 112), 88, 17, fc="#fff4f4", ec="#c0392b",
+    ax.add_patch(Rectangle((160, 112), 88, 17, fc="#fff4f4", ec="#c0392b",
                            lw=1.5, zorder=6))
-    ax.text(194, 124.5, "COMMON GROUND IS MANDATORY", ha="center", fontsize=9.0,
+    ax.text(204, 124.5, "COMMON GROUND IS MANDATORY", ha="center", fontsize=9.0,
             fontweight="bold", color="#a02020", zorder=7)
-    ax.text(194, 117.5,
-            "BT1 negative, U6 GND and the ESP32 GND must all tie together,\n"
-            "or the H-bridge sees no valid logic level and the motors will not run.",
+    ax.text(204, 117.5,
+            "PS1 negative, U7 GND and the ESP32 GND must all tie together,\n"
+            "or the H-bridge sees no valid logic level and the fans will not run.",
             ha="center", va="center", fontsize=7.9, color="#a02020",
             zorder=7, linespacing=1.6)
 
     ax.text(4, 10,
-            "C1 and C2 are soldered AT THE MOTOR TERMINALS, not on the breadboard "
-            "- brush noise on the I2C bus is the\nmost common failure in this build.  "
-            "nSLEEP must be driven HIGH or the bridge stays off.  "
-            "Motor supply is separate from logic.",
+            "Fans are brushless and only ever switched one direction, so no "
+            "suppression capacitors are fitted.\n"
+            "nSLEEP must be driven HIGH or the bridge stays off.  nFAULT is open "
+            "drain: GPIO 19 reads it through the internal pull-up.\n"
+            "Fan power never passes through the ESP32, which runs from USB.",
             fontsize=8.2, va="bottom", color="#44444e", linespacing=1.7)
-    title_block(ax, W, 2, 2, "Motor Drive and Power")
+    title_block(ax, W, 2, 2, "Fan Drive and Power")
     pdf.savefig(fig, bbox_inches="tight")
     plt.close(fig)
 

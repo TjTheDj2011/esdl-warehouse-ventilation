@@ -164,22 +164,25 @@ def page_control_flow(pdf):
               lx=2.6, ly=0)
 
     box(ax, xs, ys[0], 27, 9.5,
-        "FAULT\nintake off · exhaust ON\nbuzzer 4 Hz pattern", fc=ALARM, fs=8, bold=True)
+        "FAULT\nintake off · exhaust ON\nbuzzer CONTINUOUS", fc=ALARM, fs=8, bold=True)
     box(ax, xs, ys[1], 27, 9.5,
-        "STANDBY\nboth fans stopped\nbuzzer off", fc=STATE, fs=8, bold=True)
+        "STANDBY\nboth fans stopped\n3 chirps on entry", fc=STATE, fs=8, bold=True)
     box(ax, xs, ys[2], 27, 9.5,
-        "SEALED\nboth fans stopped\nbuzzer steady", fc=STATE, fs=8, bold=True)
+        "SEALED\nboth fans stopped\n3 chirps on entry", fc=STATE, fs=8, bold=True)
     box(ax, xs, ys[3], 27, 9.5,
-        "CROSS_VENT\nintake ON · exhaust ON\nbuzzer off", fc=STATE, fs=8, bold=True)
+        "CROSS_VENT\nintake ON · exhaust ON\n3 chirps on entry", fc=STATE, fs=8, bold=True)
     box(ax, xs, 15, 27, 9.5,
-        "EXHAUST_ONLY\nintake off · exhaust ON\nbuzzer steady", fc=STATE, fs=8, bold=True)
+        "EXHAUST_ONLY\nintake off · exhaust ON\n3 chirps on entry", fc=STATE, fs=8, bold=True)
 
     arrow(ax, (xd + 15, ys[0]), (xs - 13.5, ys[0]), "no,  3 in a row", ly=1.9)
     arrow(ax, (xd + 15, ys[1]), (xs - 13.5, ys[1]), "no", ly=1.9)
     arrow(ax, (xd + 15, ys[2]), (xs - 13.5, ys[2]), "yes", ly=1.9)
     arrow(ax, (xd + 15, ys[3]), (xs - 13.5, ys[3]), "yes", ly=1.9)
-    arrow(ax, (xd, ys[3] - 5.5), (xd, 15), "no", lx=2.6, ly=0)
-    arrow(ax, (xd + 15, 15), (xs - 13.5, 15))
+    # One elbow: straight down with no head, then across into the box. Drawing
+    # it as two separate arrows left a gap at the corner, so the branch appeared
+    # to end in mid-air.
+    arrow(ax, (xd, ys[3] - 5.5), (xd, 15), "no", lx=2.6, ly=0, style="-")
+    arrow(ax, (xd, 15), (xs - 13.5, 15))
 
     ax.add_patch(Rectangle((8, 3.8), 84, 6.6, fc="#f4f7fb", ec="#7a8899",
                            lw=1.1, zorder=2))
@@ -190,7 +193,7 @@ def page_control_flow(pdf):
             "T_out, which releases the seal and resumes ventilation.",
             ha="center", va="center", fontsize=8.2, color="#33333c",
             linespacing=1.6, zorder=3)
-    footer(ax, "Asserted by test/test_control_host.cpp — 48 checks, sections [13]-[17]")
+    footer(ax, "Asserted by test/test_control_host.cpp — 55 checks, sections [1]-[18]")
     pdf.savefig(fig, bbox_inches="tight")
     plt.close(fig)
 
@@ -308,8 +311,8 @@ def page_airflow(pdf):
 
     ax.add_patch(Rectangle((10, 0.4), 80, 5.0, fc="#f4f7fb", ec="#7a8899", lw=1.0))
     ax.text(50, 2.9,
-            "FAULT commands the same airflow as EXHAUST_ONLY with a distinct 4 Hz "
-            "buzzer pattern \u2014 bounded near ambient beats an unbounded heat soak.",
+            "FAULT commands the same airflow as EXHAUST_ONLY with a continuous alarm "
+            "tone \u2014 bounded near ambient beats an unbounded heat soak.",
             ha="center", va="center", fontsize=7.8, color="#33333c")
     pdf.savefig(fig, bbox_inches="tight")
     plt.close(fig)
