@@ -42,19 +42,19 @@ Safe working pins on this board: **4, 13, 14, 16, 17, 18, 19, 21, 22, 23, 25, 26
 | Signal | GPIO | Notes |
 |---|---|---|
 | DS18B20 — inside / chamber | 4 | 1-wire. **4.7k pull-up to 3.3V**; breakout modules include it. |
-| DS18B20 — outside / ambient | 16 | Same. Keep well clear of the exhaust plume. |
-| I2C bus 0 SDA | 21 | OLED panels IN (0x3C) and OUT (0x3D) |
+| DS18B20 — outside / ambient | 16 | Board pin is printed **RX2**, not 16. Keep well clear of the exhaust plume. |
+| I2C bus 0 SDA | 21 | OLED panel IN (0x3C). Roles go to panels in probe order, so this is as built, not fixed by wiring |
 | I2C bus 0 SCL | 22 | |
-| I2C bus 1 SDA | 17 | OLED panel STATE (0x3C) |
+| I2C bus 1 SDA | 17 | Board pin is printed **TX2**. OLED panels OUT (0x3C) and STATE (0x3D) |
 | I2C bus 1 SCL | 18 | |
-| DRV8833 AIN1 — intake fan | 25 | |
-| DRV8833 AIN2 — intake fan | 26 | |
-| DRV8833 BIN1 — exhaust fan | 27 | |
-| DRV8833 BIN2 — exhaust fan | 14 | |
-| DRV8833 nSLEEP | 13 | Drive HIGH to enable the bridge. |
+| DRV8833 AIN1 — intake fan | 25 | Module pin printed **IN1** |
+| DRV8833 AIN2 — intake fan | 26 | Module pin printed **IN2** |
+| DRV8833 BIN1 — exhaust fan | 27 | Module pin printed **IN3** |
+| DRV8833 BIN2 — exhaust fan | 14 | Module pin printed **IN4** |
+| DRV8833 nSLEEP | 13 | Module pin printed **EEP**. Drive HIGH to enable the bridge; leave J1 open. |
 | Buzzer | 23 | Buzzer *module* with onboard transistor. |
 
-| DRV8833 nFAULT (optional) | 19 | Open-drain, `INPUT_PULLUP`. See the caveat below. |
+| DRV8833 nFAULT (optional) | 19 | Module pin printed **ULT**. Open-drain, `INPUT_PULLUP`. See the caveat below. |
 | Bench probe / sense | 32 | Continuity probe and node classifier. Not needed for the demo. |
 
 **GPIO 33 must be left unwired.** The `node` classifier reads it as a control to
